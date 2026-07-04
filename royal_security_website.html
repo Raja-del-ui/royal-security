@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Royal Security | Elite Red Team Operations & Training</title>
+    
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configure Tailwind theme -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: '#0a0a0a',
+                        darker: '#050505',
+                        primary: '#dc2626', // Deep Red for "Red Team" vibe
+                        primaryHover: '#b91c1c',
+                        accent: '#facc15' // Gold/Royal accent
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Load Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Load Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        body {
+            background-color: #050505;
+            color: #f3f4f6;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .font-mono-custom {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Subtle grid background for the tech feel */
+        .bg-grid {
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        /* Glow effects */
+        .glow-red {
+            box-shadow: 0 0 20px rgba(220, 38, 38, 0.3);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px -10px rgba(220, 38, 38, 0.4);
+            border-color: rgba(220, 38, 38, 0.5);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #dc2626;
+        }
+
+        /* Anti-gravity floating animations */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); }
+            100% { transform: translateY(0px); }
+        }
+        .anti-gravity {
+            animation: float 6s ease-in-out infinite;
+        }
+        .anti-gravity-delayed {
+            animation: float 8s ease-in-out 2s infinite;
+        }
+
+        /* Scroll Reveal Animation */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-primary selection:text-white relative">
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 top-0 border-b border-white/10 bg-darker/80 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <!-- Logo -->
+                <div class="flex-shrink-0 flex items-center gap-2 cursor-pointer">
+                    <i class="ph ph-shield-check text-primary text-4xl"></i>
+                    <span class="font-bold text-2xl tracking-tighter uppercase">Royal <span class="text-primary">Security</span></span>
+                </div>
+                
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex space-x-8 items-center">
+                    <a href="#home" class="text-gray-300 hover:text-white transition text-sm font-semibold uppercase tracking-wider">Home</a>
+                    <a href="#services" class="text-gray-300 hover:text-white transition text-sm font-semibold uppercase tracking-wider">Services</a>
+                    <a href="#bootcamp" class="text-gray-300 hover:text-white transition text-sm font-semibold uppercase tracking-wider">Bootcamp</a>
+                    <a href="#intel" class="text-gray-300 hover:text-white transition text-sm font-semibold uppercase tracking-wider">Intel</a>
+                    <a href="#team" class="text-gray-300 hover:text-white transition text-sm font-semibold uppercase tracking-wider">Team</a>
+                    <a href="#contact" class="bg-primary hover:bg-primaryHover text-white px-6 py-2 rounded-md font-bold transition duration-300 shadow-lg glow-red uppercase text-sm tracking-widest">
+                        Engage
+                    </a>
+                    <!-- Operator Portal Button -->
+                    <button id="nav-portal-btn" class="text-gray-400 hover:text-white transition border border-white/20 px-3 py-1 rounded text-xs font-mono-custom uppercase tracking-wider" title="Operator Portal">
+                        Portal
+                    </button>
+                    <!-- Admin Login Button -->
+                    <button id="nav-admin-btn" class="text-gray-400 hover:text-primary transition ml-2" title="Secure Access">
+                        <i class="ph ph-user-gear text-2xl"></i>
+                    </button>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" class="text-gray-300 hover:text-white focus:outline-none">
+                        <i class="ph ph-list text-3xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu (Hidden by default) -->
+        <div id="mobile-menu" class="hidden md:hidden bg-dark border-b border-white/10">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#home" class="block px-3 py-2 text-base font-medium text-gray-300 hover:text-white hover:bg-white/5 rounded-md">Home</a>
+                <a href="#services" class="block px-3 py-2 text-base font-medium text-gray-300 hover:text-white hover:bg-white/5 rounded-md">Services</a>
+                <a href="#bootcamp" class="block px-3 py-2 text-base font-medium text-gray-300 hover:text-white hover:bg-white/5 rounded-md">Bootcamp</a>
+                <a href="#intel" class="block px-3 py-2 text-base font-medium text-gray-300 hover:text-white hover:bg-white/5 rounded-md">Intel Logs</a>
+                <a href="#team" class="block px-3 py-2 text-base font-medium text-gray-300 hover:text-white hover:bg-white/5 rounded-md">Team</a>
+                <a href="#contact" class="block px-3 py-2 text-base font-medium text-primary hover:text-primaryHover rounded-md">Engage Us</a>
+                <button id="mobile-portal-btn" class="block w-full text-left px-3 py-2 text-base font-medium text-gray-400 hover:text-white rounded-md">Operator Portal</button>
+                <button id="mobile-admin-btn" class="block w-full text-left px-3 py-2 text-base font-medium text-gray-400 hover:text-primary rounded-md">Admin Login</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden bg-grid">
+        <!-- Radial gradient for center focus -->
+        <div class="absolute inset-0 bg-darker/80" style="background: radial-gradient(circle at center, transparent 0%, #050505 80%); z-index: 1;"></div>
+        
+        <!-- Anti-Gravity Particle Canvas -->
+        <canvas id="anti-gravity-canvas" class="absolute inset-0 w-full h-full" style="z-index: 2; opacity: 0.6;"></canvas>
+        
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10 reveal">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-primary text-xs font-mono-custom mb-6 uppercase tracking-widest anti-gravity">
+                <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                Military-Grade Cybersecurity
+            </div>
+            
+            <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 uppercase leading-tight">
+                Offensive Security <br/> 
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-red-400">Redefined</span>
+            </h1>
+            
+            <p class="mt-4 text-xl text-gray-400 max-w-3xl mx-auto mb-10 font-light">
+                We simulate advanced persistent threats to harden your infrastructure. Elite red teaming, penetration testing, and military-style operator training.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="#contact" class="bg-primary hover:bg-primaryHover text-white px-8 py-4 rounded-md font-bold transition duration-300 glow-red uppercase tracking-wider flex items-center justify-center gap-2">
+                    Request Assessment <i class="ph ph-arrow-right font-bold"></i>
+                </a>
+                <a href="#bootcamp" class="border border-white/20 bg-white/5 hover:bg-white/10 text-white px-8 py-4 rounded-md font-bold transition duration-300 uppercase tracking-wider flex items-center justify-center gap-2">
+                    Join Bootcamp <i class="ph ph-terminal font-bold"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="py-20 bg-dark border-t border-white/5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-3xl md:text-5xl font-bold uppercase tracking-tight mb-4">Our <span class="text-primary">Capabilities</span></h2>
+                <div class="w-24 h-1 bg-primary mx-auto rounded-full"></div>
+                <p class="mt-4 text-gray-400 max-w-2xl mx-auto">Comprehensive security assessments designed to uncover vulnerabilities before malicious actors do.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Service 1 -->
+                <div class="bg-darker border border-white/10 p-8 rounded-xl card-hover relative overflow-hidden group reveal">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition anti-gravity">
+                        <i class="ph ph-crosshair text-8xl text-primary"></i>
+                    </div>
+                    <div class="w-14 h-14 bg-primary/20 rounded-lg flex items-center justify-center mb-6 border border-primary/30 text-primary anti-gravity-delayed">
+                        <i class="ph ph-ghost text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 uppercase tracking-wide">Red Teaming</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed mb-6">Full-scope, multi-layered attack simulations designed to test your detection and response capabilities against real-world APTs.</p>
+                    <a href="#" class="text-primary hover:text-white transition font-mono-custom text-sm flex items-center gap-2">
+                        Learn More <i class="ph ph-caret-right"></i>
+                    </a>
+                </div>
+
+                <!-- Service 2 -->
+                <div class="bg-darker border border-white/10 p-8 rounded-xl card-hover relative overflow-hidden group reveal" style="transition-delay: 100ms;">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition anti-gravity">
+                        <i class="ph ph-code text-8xl text-primary"></i>
+                    </div>
+                    <div class="w-14 h-14 bg-primary/20 rounded-lg flex items-center justify-center mb-6 border border-primary/30 text-primary anti-gravity-delayed">
+                        <i class="ph ph-bug text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 uppercase tracking-wide">Penetration Testing</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed mb-6">Deep-dive technical assessments of your web applications, internal networks, and cloud infrastructure to identify exploit chains.</p>
+                    <a href="#" class="text-primary hover:text-white transition font-mono-custom text-sm flex items-center gap-2">
+                        Learn More <i class="ph ph-caret-right"></i>
+                    </a>
+                </div>
+
+                <!-- Service 3 -->
+                <div class="bg-darker border border-white/10 p-8 rounded-xl card-hover relative overflow-hidden group reveal" style="transition-delay: 200ms;">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition anti-gravity">
+                        <i class="ph ph-student text-8xl text-primary"></i>
+                    </div>
+                    <div class="w-14 h-14 bg-primary/20 rounded-lg flex items-center justify-center mb-6 border border-primary/30 text-primary anti-gravity-delayed">
+                        <i class="ph ph-graduation-cap text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 uppercase tracking-wide">Security Training</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed mb-6">Military-style foundation training for corporate teams. Stop thinking like a script kiddie and start thinking like an operator.</p>
+                    <a href="#" class="text-primary hover:text-white transition font-mono-custom text-sm flex items-center gap-2">
+                        Learn More <i class="ph ph-caret-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bootcamp Highlight -->
+    <section id="bootcamp" class="py-20 bg-darker relative border-y border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row items-center gap-16">
+                <div class="lg:w-1/2 reveal">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-accent/30 bg-accent/10 text-accent text-xs font-mono-custom mb-6 uppercase tracking-widest">
+                        Flagship Program
+                    </div>
+                    <h2 class="text-3xl md:text-5xl font-bold uppercase tracking-tight mb-6">
+                        Red Team <br/><span class="text-primary">Bootcamp</span>
+                    </h2>
+                    <p class="text-gray-400 mb-6 text-lg">
+                        This is not a script kiddie roadmap. This is a military-style foundation designed to transform your mindset from a passive scanner to an active post-exploitation operator.
+                    </p>
+                    
+                    <ul class="space-y-4 mb-8 font-mono-custom text-sm text-gray-300">
+                        <li class="flex items-start gap-3">
+                            <i class="ph-fill ph-check-circle text-primary text-xl mt-0.5"></i>
+                            <span><strong>Phase 1:</strong> Networking Mastery & Linux Internals</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="ph-fill ph-check-circle text-primary text-xl mt-0.5"></i>
+                            <span><strong>Phase 2:</strong> Enumeration Logic & Web Exploitation</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="ph-fill ph-check-circle text-primary text-xl mt-0.5"></i>
+                            <span><strong>Phase 3:</strong> Active Directory & Lateral Movement</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="ph-fill ph-check-circle text-primary text-xl mt-0.5"></i>
+                            <span><strong>Phase 4:</strong> C2, OPSEC, and Full Attack Simulation</span>
+                        </li>
+                    </ul>
+                    
+                    <button class="bg-white text-black hover:bg-gray-200 px-8 py-3 rounded-md font-bold transition duration-300 uppercase tracking-wider text-sm flex items-center gap-2">
+                        View Full Syllabus <i class="ph ph-file-pdf"></i>
+                    </button>
+                </div>
+                
+                <!-- Terminal UI Simulation with Anti-Gravity -->
+                <div class="lg:w-1/2 w-full reveal anti-gravity">
+                    <div class="bg-[#1e1e1e] rounded-xl border border-white/20 shadow-2xl overflow-hidden shadow-[0_20px_50px_rgba(220,38,38,0.15)]">
+                        <!-- Terminal Header -->
+                        <div class="bg-[#2d2d2d] px-4 py-2 flex items-center gap-2 border-b border-white/10">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                            <span class="ml-2 text-xs text-gray-400 font-mono-custom">operator@royal-security: ~</span>
+                        </div>
+                        <!-- Terminal Body -->
+                        <div class="p-6 font-mono-custom text-sm text-gray-300 h-[350px] overflow-y-auto">
+                            <div class="mb-2"><span class="text-green-400">operator@royal-security</span>:<span class="text-blue-400">~</span>$ ./start_training.sh</div>
+                            <div class="text-yellow-400 mb-2">[+] Initializing Royal Security Bootcamp Environment...</div>
+                            <div class="mb-1">[*] Loading Module 1: Recon & Enumeration... <span class="text-green-400">OK</span></div>
+                            <div class="mb-1">[*] Loading Module 2: Initial Access Vectors... <span class="text-green-400">OK</span></div>
+                            <div class="mb-1">[*] Loading Module 3: Active Directory Abuse... <span class="text-green-400">OK</span></div>
+                            <div class="mb-4">[*] Establishing C2 Infrastructure... <span class="text-green-400">OK</span></div>
+                            <div class="mb-2 text-red-400 font-bold">>>> WARNING: INTENSE TRAINING AHEAD <<<</div>
+                            <div class="mb-2">"Stop blindly scanning. Start thinking."</div>
+                            <div class="animate-pulse text-white mt-4">_</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Threat Intel (Blog) Section -->
+    <section id="intel" class="py-20 bg-darker border-y border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-end mb-12 reveal">
+                <div>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-gray-500/30 bg-gray-500/10 text-gray-400 text-xs font-mono-custom mb-4 uppercase tracking-widest">
+                        Declassified
+                    </div>
+                    <h2 class="text-3xl md:text-5xl font-bold uppercase tracking-tight">Threat <span class="text-primary">Intel Logs</span></h2>
+                </div>
+                <a href="#" class="hidden md:flex text-gray-400 hover:text-white transition font-mono-custom text-sm items-center gap-2">
+                    View All Logs <i class="ph ph-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Log 1 -->
+                <div class="bg-[#111] border border-white/10 rounded-xl overflow-hidden card-hover group reveal">
+                    <div class="h-48 bg-black relative overflow-hidden border-b border-white/10">
+                        <div class="absolute inset-0 bg-grid opacity-30"></div>
+                        <i class="ph ph-shield-warning absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-6xl text-primary/40 group-hover:scale-110 transition duration-500"></i>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-center text-xs font-mono-custom text-gray-500 mb-3">
+                            <span>Op-Ed / Methodology</span>
+                            <span>July 4, 2026</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2 group-hover:text-primary transition uppercase tracking-wide">Bypassing EDR with Custom Syscalls</h3>
+                        <p class="text-gray-400 text-sm mb-4 line-clamp-3">A deep dive into how our red team operators utilize direct system calls to evade modern Endpoint Detection and Response solutions during engagements.</p>
+                        <a href="#" class="text-primary text-sm font-mono-custom flex items-center gap-2 hover:text-white transition">Read Report <i class="ph ph-arrow-right"></i></a>
+                    </div>
+                </div>
+
+                <!-- Log 2 -->
+                <div class="bg-[#111] border border-white/10 rounded-xl overflow-hidden card-hover group reveal" style="transition-delay: 100ms;">
+                    <div class="h-48 bg-black relative overflow-hidden border-b border-white/10">
+                        <div class="absolute inset-0 bg-grid opacity-30"></div>
+                        <i class="ph ph-file-code absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-6xl text-gray-600 group-hover:scale-110 transition duration-500"></i>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-center text-xs font-mono-custom text-gray-500 mb-3">
+                            <span>CTF Writeup</span>
+                            <span>June 28, 2026</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2 group-hover:text-primary transition uppercase tracking-wide">Active Directory Chain Exploitation</h3>
+                        <p class="text-gray-400 text-sm mb-4 line-clamp-3">Step-by-step breakdown of leveraging an initial web shell into full Domain Admin compromise utilizing Kerberoasting and Pass-the-Hash.</p>
+                        <a href="#" class="text-primary text-sm font-mono-custom flex items-center gap-2 hover:text-white transition">Read Report <i class="ph ph-arrow-right"></i></a>
+                    </div>
+                </div>
+
+                <!-- Log 3 -->
+                <div class="bg-[#111] border border-white/10 rounded-xl overflow-hidden card-hover group reveal" style="transition-delay: 200ms;">
+                    <div class="h-48 bg-black relative overflow-hidden border-b border-white/10">
+                        <div class="absolute inset-0 bg-grid opacity-30"></div>
+                        <i class="ph ph-radar absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-6xl text-gray-600 group-hover:scale-110 transition duration-500"></i>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-center text-xs font-mono-custom text-gray-500 mb-3">
+                            <span>Reconnaissance</span>
+                            <span>June 15, 2026</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2 group-hover:text-primary transition uppercase tracking-wide">The Art of External Enumeration</h3>
+                        <p class="text-gray-400 text-sm mb-4 line-clamp-3">Stop blindly scanning. How to map an organization's entire external footprint using OSINT, ASN enumeration, and certificate transparency logs.</p>
+                        <a href="#" class="text-primary text-sm font-mono-custom flex items-center gap-2 hover:text-white transition">Read Report <i class="ph ph-arrow-right"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-8 text-center md:hidden reveal">
+                 <a href="#" class="text-gray-400 hover:text-white transition font-mono-custom text-sm flex items-center justify-center gap-2">
+                    View All Logs <i class="ph ph-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section id="team" class="py-20 bg-dark border-y border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-3xl md:text-5xl font-bold uppercase tracking-tight mb-4">Command <span class="text-primary">Hierarchy</span></h2>
+                <div class="w-24 h-1 bg-primary mx-auto rounded-full"></div>
+                <p class="mt-4 text-gray-400 max-w-2xl mx-auto">Elite operators handpicked from military, intelligence, and deep-web backgrounds.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- CEO / Creator -->
+                <div class="bg-darker border border-primary/40 p-6 rounded-xl card-hover relative overflow-hidden group reveal glow-red shadow-[0_0_20px_rgba(220,38,38,0.1)]">
+                    <div class="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mb-4 border border-primary mx-auto">
+                        <i class="ph ph-crown text-4xl text-primary"></i>
+                    </div>
+                    <div class="text-center">
+                        <h3 class="text-xl font-bold uppercase text-white">Your Name</h3>
+                        <p class="text-primary text-sm font-mono-custom mb-4">CEO / Lead Architect</p>
+                        <p class="text-gray-400 text-sm">Former military cyber warfare specialist. Architect of the Royal Security offensive methodology.</p>
+                    </div>
+                </div>
+                <!-- Member 1 -->
+                <div class="bg-darker border border-white/10 p-6 rounded-xl card-hover relative overflow-hidden group reveal">
+                    <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-4 border border-white/20 mx-auto">
+                        <i class="ph ph-skull text-3xl text-gray-300"></i>
+                    </div>
+                    <div class="text-center">
+                        <h3 class="text-xl font-bold uppercase text-white">Ghost</h3>
+                        <p class="text-gray-400 text-sm font-mono-custom mb-4">Lead Red Teamer</p>
+                        <p class="text-gray-500 text-sm">Specializes in advanced persistent threat emulation, EDR evasion, and physical infiltration.</p>
+                    </div>
+                </div>
+                <!-- Member 2 -->
+                <div class="bg-darker border border-white/10 p-6 rounded-xl card-hover relative overflow-hidden group reveal">
+                    <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-4 border border-white/20 mx-auto">
+                        <i class="ph ph-terminal-window text-3xl text-gray-300"></i>
+                    </div>
+                    <div class="text-center">
+                        <h3 class="text-xl font-bold uppercase text-white">ZeroDay</h3>
+                        <p class="text-gray-400 text-sm font-mono-custom mb-4">Exploit Developer</p>
+                        <p class="text-gray-500 text-sm">Reverse engineering expert. Creates custom malware and weaponizes unpatched CVEs.</p>
+                    </div>
+                </div>
+                <!-- Member 3 -->
+                <div class="bg-darker border border-white/10 p-6 rounded-xl card-hover relative overflow-hidden group reveal">
+                    <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-4 border border-white/20 mx-auto">
+                        <i class="ph ph-plugs-connected text-3xl text-gray-300"></i>
+                    </div>
+                    <div class="text-center">
+                        <h3 class="text-xl font-bold uppercase text-white">Cipher</h3>
+                        <p class="text-gray-400 text-sm font-mono-custom mb-4">Network & AD Specialist</p>
+                        <p class="text-gray-500 text-sm">Master of Active Directory lateral movement, Kerberos abuse, and deep network pivoting.</p>
+                    </div>
+                </div>
+                <!-- Member 4 -->
+                <div class="bg-darker border border-white/10 p-6 rounded-xl card-hover relative overflow-hidden group reveal">
+                    <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-4 border border-white/20 mx-auto">
+                        <i class="ph ph-users-three text-3xl text-gray-300"></i>
+                    </div>
+                    <div class="text-center">
+                        <h3 class="text-xl font-bold uppercase text-white">Phantom</h3>
+                        <p class="text-gray-400 text-sm font-mono-custom mb-4">Social Engineering Chief</p>
+                        <p class="text-gray-500 text-sm">Manipulates the human element. Director of highly-targeted spear-phishing and vishing campaigns.</p>
+                    </div>
+                </div>
+                <!-- Member 5 -->
+                <div class="bg-darker border border-white/10 p-6 rounded-xl card-hover relative overflow-hidden group reveal">
+                    <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-4 border border-white/20 mx-auto">
+                        <i class="ph ph-eye-slash text-3xl text-gray-300"></i>
+                    </div>
+                    <div class="text-center">
+                        <h3 class="text-xl font-bold uppercase text-white">Specter</h3>
+                        <p class="text-gray-400 text-sm font-mono-custom mb-4">OPSEC & C2 Analyst</p>
+                        <p class="text-gray-500 text-sm">Maintains stealth infrastructure, manages network beacons, and ensures complete operator anonymity.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 bg-dark">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 reveal">
+            <div class="bg-darker border border-primary/20 rounded-2xl p-8 md:p-12 shadow-[0_0_40px_rgba(220,38,38,0.1)] relative overflow-hidden">
+                <!-- Decorative background elements -->
+                <div class="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-primary/5 blur-3xl"></div>
+                <div class="absolute bottom-0 left-0 -ml-16 -mb-16 w-64 h-64 rounded-full bg-primary/5 blur-3xl"></div>
+                
+                <div class="relative z-10 text-center mb-10">
+                    <h2 class="text-3xl md:text-4xl font-bold uppercase tracking-tight mb-4">Initiate <span class="text-primary">Contact</span></h2>
+                    <p class="text-gray-400">Secure your infrastructure or enlist in our upcoming bootcamp cohort.</p>
+                </div>
+
+                <form class="relative z-10 space-y-6" onsubmit="event.preventDefault(); showMessage();">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-2 font-mono-custom">Name / Callsign</label>
+                            <input type="text" required class="w-full bg-[#111] border border-white/10 rounded-md px-4 py-3 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition" placeholder="John Doe">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-2 font-mono-custom">Secure Email</label>
+                            <input type="email" required class="w-full bg-[#111] border border-white/10 rounded-md px-4 py-3 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition" placeholder="hq@company.com">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2 font-mono-custom">Inquiry Type</label>
+                        <select class="w-full bg-[#111] border border-white/10 rounded-md px-4 py-3 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition appearance-none">
+                            <option>Red Team Engagement</option>
+                            <option>Penetration Testing</option>
+                            <option>Bootcamp Enrollment</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2 font-mono-custom">Message</label>
+                        <textarea rows="4" required class="w-full bg-[#111] border border-white/10 rounded-md px-4 py-3 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition" placeholder="Specify your mission parameters..."></textarea>
+                    </div>
+                    <button type="submit" class="w-full bg-primary hover:bg-primaryHover text-white px-8 py-4 rounded-md font-bold transition duration-300 glow-red uppercase tracking-widest">
+                        Transmit Message
+                    </button>
+                    
+                    <!-- Success Message (Hidden by default) -->
+                    <div id="success-msg" class="hidden mt-4 p-4 bg-green-500/10 border border-green-500/50 rounded-md text-green-400 text-center font-mono-custom text-sm">
+                        <i class="ph ph-check-circle mr-2"></i> Transmission received. Our operators will contact you shortly.
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-[#020202] py-12 border-t border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="flex items-center gap-2">
+                    <i class="ph-fill ph-shield-check text-primary text-3xl"></i>
+                    <span class="font-bold text-xl tracking-tighter uppercase text-white">Royal <span class="text-primary">Security</span></span>
+                </div>
+                
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-500 hover:text-white transition text-2xl"><i class="ph ph-twitter-logo"></i></a>
+                    <a href="#" class="text-gray-500 hover:text-white transition text-2xl"><i class="ph ph-github-logo"></i></a>
+                    <a href="#" class="text-gray-500 hover:text-white transition text-2xl"><i class="ph ph-linkedin-logo"></i></a>
+                    <a href="#" id="wa-link-footer" target="_blank" class="text-gray-500 hover:text-green-500 transition text-2xl" title="Join WhatsApp Channel"><i class="ph ph-whatsapp-logo"></i></a>
+                </div>
+            </div>
+            <div class="mt-8 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-gray-600 text-sm font-mono-custom">
+                    &copy; <span id="year"></span> Royal Security. All rights reserved.
+                </p>
+                <div class="flex space-x-4 text-sm text-gray-600 font-mono-custom">
+                    <a href="#" class="hover:text-primary transition">Privacy Policy</a>
+                    <span>|</span>
+                    <a href="#" class="hover:text-primary transition">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- UI Overlays (Login Modal, Toast, Admin Dashboard) -->
+    
+    <!-- Custom Notification Toast -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-[100] flex flex-col gap-2"></div>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="fixed inset-0 z-[60] hidden bg-black/80 backdrop-blur-sm flex items-center justify-center opacity-0 transition-opacity duration-300">
+        <div class="bg-darker border border-primary/30 p-8 rounded-xl shadow-[0_0_50px_rgba(220,38,38,0.2)] max-w-md w-full transform scale-95 transition-transform duration-300" id="login-modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold uppercase text-white flex items-center gap-2">
+                    <i class="ph ph-lock-key text-primary"></i> <span id="login-modal-title">Secure Access</span>
+                </h3>
+                <button id="close-login-btn" class="text-gray-500 hover:text-white transition"><i class="ph ph-x text-xl"></i></button>
+            </div>
+            <p id="login-modal-desc" class="text-sm text-gray-400 font-mono-custom mb-6">Enter credentials to authenticate.</p>
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs text-gray-400 font-mono-custom mb-1">Passphrase</label>
+                    <input type="password" id="admin-password" class="w-full bg-[#111] border border-white/10 rounded-md px-4 py-3 text-white font-mono-custom focus:border-primary focus:ring-1 focus:ring-primary transition outline-none" placeholder="••••••••">
+                    <p class="text-xs text-primary/70 mt-1 font-mono-custom" id="login-hint">Hint: type "admin" or "operator"</p>
+                </div>
+                <input type="hidden" id="login-type-target" value="admin">
+                <button type="submit" class="w-full bg-primary hover:bg-primaryHover text-white px-4 py-3 rounded-md font-bold transition glow-red uppercase text-sm tracking-widest mt-4 flex items-center justify-center gap-2">
+                    <span id="login-btn-text">Authenticate</span> <i class="ph ph-sign-in"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Operator HUD / Student Dashboard (Hidden by Default) -->
+    <div id="operator-dashboard" class="hidden fixed inset-0 z-40 bg-[#0a0a0a] pt-20 overflow-y-auto min-h-screen">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-white/10 pb-6 mb-8 gap-4">
+                <div>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-green-500/30 bg-green-500/10 text-green-400 text-xs font-mono-custom mb-2 uppercase tracking-widest">
+                        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Operator Online
+                    </div>
+                    <h1 class="text-3xl font-bold uppercase tracking-tight text-white">Student HUD</h1>
+                </div>
+                <button id="operator-logout-btn" class="border border-white/20 bg-white/5 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/50 text-white px-4 py-2 rounded-md transition text-sm font-mono-custom flex items-center gap-2">
+                    <i class="ph ph-sign-out"></i> End Session
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                <!-- Operator Sidebar -->
+                <div class="lg:col-span-1 space-y-4">
+                    <button onclick="switchOperatorTab('syllabus')" id="tab-syllabus" class="w-full text-left px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white font-mono-custom text-sm uppercase tracking-wider flex items-center gap-3 transition">
+                        <i class="ph ph-list-numbers text-xl text-primary"></i> 10-Day Syllabus
+                    </button>
+                    <button onclick="switchOperatorTab('range')" id="tab-range" class="w-full text-left px-4 py-3 bg-black border border-white/5 hover:border-white/20 rounded-lg text-gray-400 hover:text-white font-mono-custom text-sm uppercase tracking-wider flex items-center gap-3 transition">
+                        <i class="ph ph-terminal-window text-xl text-green-500"></i> Virtual Range
+                    </button>
+                    <div class="mt-8 bg-[#111] border border-white/10 p-4 rounded-lg">
+                        <h4 class="text-xs text-gray-500 font-mono-custom uppercase mb-2">Training Progress</h4>
+                        <div class="w-full bg-black rounded-full h-2 mb-1">
+                            <div class="bg-primary h-2 rounded-full" style="width: 30%"></div>
+                        </div>
+                        <div class="flex justify-between text-xs font-mono-custom text-gray-400">
+                            <span>Day 3/10</span>
+                            <span>30%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Operator Content Area -->
+                <div class="lg:col-span-3">
+                    
+                    <!-- Syllabus View -->
+                    <div id="view-syllabus" class="bg-[#111] border border-white/10 rounded-xl p-6">
+                        <h2 class="text-2xl font-bold uppercase text-white mb-6 border-b border-white/10 pb-4">Bootcamp Modules</h2>
+                        <div class="space-y-4">
+                            <!-- Day 1 & 2 Completed -->
+                            <div class="p-4 border border-green-500/30 bg-green-500/5 rounded-lg flex justify-between items-center opacity-70">
+                                <div>
+                                    <h3 class="text-white font-bold uppercase tracking-wide">Day 1: Networking Mastery & Day 2: Linux Internals</h3>
+                                    <p class="text-sm text-gray-400 font-mono-custom mt-1">TCP/IP, Wireshark, SUID, Reverse Shells</p>
+                                </div>
+                                <span class="bg-green-500 text-black px-3 py-1 rounded text-xs font-bold uppercase tracking-wider flex items-center gap-1"><i class="ph-fill ph-check-circle"></i> Complete</span>
+                            </div>
+                            
+                            <!-- Day 3 Active -->
+                            <div class="p-4 border border-primary/50 bg-primary/10 rounded-lg relative overflow-hidden glow-red">
+                                <div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+                                <div class="flex justify-between items-start md:items-center flex-col md:flex-row gap-4">
+                                    <div>
+                                        <h3 class="text-white font-bold uppercase tracking-wide text-lg">Day 3: Enumeration Mindset</h3>
+                                        <p class="text-sm text-gray-300 font-mono-custom mt-1 mb-2">Stop blindly scanning. Start thinking.</p>
+                                        <ul class="text-xs text-gray-400 font-mono-custom space-y-1">
+                                            <li>> Nmap deep dive (correct flags)</li>
+                                            <li>> Service enumeration (SMB, FTP, SSH)</li>
+                                            <li>> Manual vs Automated approaches</li>
+                                        </ul>
+                                    </div>
+                                    <div class="flex flex-col gap-2 w-full md:w-auto">
+                                        <button class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded text-xs font-mono-custom border border-white/20 transition flex items-center justify-center gap-2">
+                                            <i class="ph ph-file-pdf text-red-400"></i> Download Slides
+                                        </button>
+                                        <button onclick="switchOperatorTab('range')" class="bg-primary hover:bg-primaryHover text-white px-4 py-2 rounded text-xs font-bold uppercase tracking-wider transition flex items-center justify-center gap-2">
+                                            Enter Lab <i class="ph ph-arrow-right"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Day 4 Locked -->
+                            <div class="p-4 border border-white/5 bg-black rounded-lg flex justify-between items-center opacity-50">
+                                <div>
+                                    <h3 class="text-gray-400 font-bold uppercase tracking-wide">Day 4: Web Exploitation</h3>
+                                    <p class="text-sm text-gray-600 font-mono-custom mt-1">SQLi, XSS, Burp Suite</p>
+                                </div>
+                                <i class="ph ph-lock-key text-xl text-gray-600"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cyber Range View -->
+                    <div id="view-range" class="hidden h-[600px] bg-black border border-white/20 rounded-xl flex flex-col overflow-hidden shadow-[0_0_30px_rgba(34,197,94,0.15)] relative">
+                        <div class="absolute inset-0 bg-grid opacity-10 pointer-events-none"></div>
+                        <div class="bg-[#1a1a1a] border-b border-white/10 p-3 flex justify-between items-center z-10">
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                                <span class="text-gray-400 text-xs font-mono-custom ml-3 uppercase tracking-widest">Target: 10.10.5.42 (Enum-Box)</span>
+                            </div>
+                            <span class="text-green-500 text-xs font-mono-custom animate-pulse">Connected</span>
+                        </div>
+                        
+                        <!-- Terminal Output Area -->
+                        <div id="terminal-output" class="flex-1 p-4 font-mono-custom text-sm text-gray-300 overflow-y-auto z-10 custom-scrollbar">
+                            <div class="text-green-400 mb-4">
+                                <div>Royal Security Virtual Range - v2.4.1</div>
+                                <div>Day 3: Enumeration Practice.</div>
+                                <div>Type 'help' to see available tools.</div>
+                                <div class="mt-2 text-gray-500">Hint: Try scanning the target IP 10.10.5.42</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Terminal Input Area -->
+                        <div class="border-t border-white/10 p-2 bg-[#0a0a0a] flex items-center z-10">
+                            <span class="text-green-500 font-mono-custom mr-2">operator@kali:~$</span>
+                            <input type="text" id="terminal-input" class="flex-1 bg-transparent border-none outline-none text-white font-mono-custom w-full focus:ring-0" autocomplete="off" spellcheck="false" autofocus>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard (Hidden by Default) -->
+    <div id="admin-dashboard" class="hidden fixed inset-0 z-40 bg-darker pt-20 overflow-y-auto min-h-screen">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-white/10 pb-6 mb-8 gap-4">
+                <div>
+                    <h1 class="text-3xl font-bold uppercase tracking-tight flex items-center gap-3">
+                        <i class="ph ph-shield-star text-primary"></i> Command Center
+                    </h1>
+                    <p class="text-gray-400 font-mono-custom text-sm mt-1">Authorized Personnel Only. Connected to secure backend.</p>
+                </div>
+                <button id="logout-btn" class="border border-white/20 bg-white/5 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/50 text-white px-4 py-2 rounded-md transition text-sm font-mono-custom flex items-center gap-2">
+                    <i class="ph ph-sign-out"></i> Disconnect
+                </button>
+            </div>
+
+            <!-- Dashboard Content -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Sidebar / Stats -->
+                <div class="lg:col-span-1 space-y-6">
+                    <div class="bg-[#111] border border-white/10 p-6 rounded-xl">
+                        <h3 class="text-lg font-bold uppercase mb-4 text-gray-300 border-b border-white/10 pb-2">System Status</h3>
+                        <ul class="space-y-3 font-mono-custom text-sm">
+                            <li class="flex justify-between"><span class="text-gray-500">Database</span><span class="text-green-400">ONLINE</span></li>
+                            <li class="flex justify-between"><span class="text-gray-500">Active Accounts</span><span id="account-count" class="text-white">0/5</span></li>
+                            <li class="flex justify-between"><span class="text-gray-500">Security Level</span><span class="text-primary">MAXIMUM</span></li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Provision Account Form -->
+                    <div class="bg-[#111] border border-white/10 p-6 rounded-xl">
+                        <h3 class="text-lg font-bold uppercase mb-4 text-gray-300 border-b border-white/10 pb-2">Provision Account</h3>
+                        <form id="add-user-form" class="space-y-4">
+                            <div>
+                                <input type="text" id="new-user-name" required placeholder="Callsign / Name" class="w-full bg-dark border border-white/10 rounded px-3 py-3 text-sm text-white focus:border-primary outline-none font-mono-custom">
+                            </div>
+                            <div>
+                                <select id="new-user-role" class="w-full bg-dark border border-white/10 rounded px-3 py-3 text-sm text-white focus:border-primary outline-none font-mono-custom appearance-none">
+                                    <option value="Operator">Operator</option>
+                                    <option value="Trainee">Trainee</option>
+                                    <option value="Admin">Admin</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="w-full bg-white/10 hover:bg-primary/80 text-white px-4 py-3 rounded transition font-mono-custom text-sm flex justify-center items-center gap-2 mt-2">
+                                <i class="ph ph-plus text-lg"></i> Create Account
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- System Config Form (WhatsApp) -->
+                    <div class="bg-[#111] border border-white/10 p-6 rounded-xl">
+                        <h3 class="text-lg font-bold uppercase mb-4 text-gray-300 border-b border-white/10 pb-2">Comms Config</h3>
+                        <form id="update-config-form" class="space-y-4">
+                            <div>
+                                <label class="block text-xs text-gray-500 font-mono-custom mb-1">WhatsApp Channel URL</label>
+                                <input type="url" id="config-wa-link" placeholder="https://chat.whatsapp.com/..." class="w-full bg-dark border border-white/10 rounded px-3 py-3 text-sm text-white focus:border-green-500 outline-none font-mono-custom">
+                            </div>
+                            <button type="submit" class="w-full bg-white/10 hover:bg-green-600 text-white px-4 py-3 rounded transition font-mono-custom text-sm flex justify-center items-center gap-2">
+                                <i class="ph ph-floppy-disk text-lg"></i> Update Channel Link
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Main Table -->
+                <div class="lg:col-span-2">
+                    <div class="bg-[#111] border border-white/10 rounded-xl overflow-hidden shadow-2xl">
+                        <div class="p-6 border-b border-white/10 flex justify-between items-center bg-black/40">
+                            <h3 class="text-lg font-bold uppercase text-gray-300">Managed Accounts</h3>
+                            <div class="text-xs font-mono-custom text-gray-500">License Limit: 5</div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm font-mono-custom">
+                                <thead class="bg-black text-gray-400 text-xs uppercase">
+                                    <tr>
+                                        <th class="px-6 py-4 border-b border-white/5">Callsign</th>
+                                        <th class="px-6 py-4 border-b border-white/5">Role</th>
+                                        <th class="px-6 py-4 border-b border-white/5">Status</th>
+                                        <th class="px-6 py-4 border-b border-white/5 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="users-table-body" class="divide-y divide-white/5 text-gray-300 bg-[#111]">
+                                    <!-- User rows injected by JS -->
+                                    <tr>
+                                        <td colspan="4" class="px-6 py-8 text-center text-gray-500">Connecting to secure database...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interactive Scripts -->
+    <script>
+        // Set current year in footer
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Mobile Menu Toggle
+        const btn = document.getElementById('mobile-menu-btn');
+        const menu = document.getElementById('mobile-menu');
+
+        btn.addEventListener('click', () => {
+            menu.classList.toggle('hidden');
+        });
+
+        // Close mobile menu on link click
+        document.querySelectorAll('#mobile-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                menu.classList.add('hidden');
+            });
+        });
+
+        // Handle Form Submission Mock
+        function showMessage() {
+            const msg = document.getElementById('success-msg');
+            msg.classList.remove('hidden');
+            
+            // Clear form
+            document.querySelector('form').reset();
+
+            // Hide message after 5 seconds
+            setTimeout(() => {
+                msg.classList.add('hidden');
+            }, 5000);
+        }
+
+        // Scroll Reveal Animation Logic
+        function reveal() {
+            var reveals = document.querySelectorAll(".reveal");
+            for (var i = 0; i < reveals.length; i++) {
+                var windowHeight = window.innerHeight;
+                var elementTop = reveals[i].getBoundingClientRect().top;
+                var elementVisible = 100; // when to trigger
+
+                if (elementTop < windowHeight - elementVisible) {
+                    reveals[i].classList.add("active");
+                }
+            }
+        }
+        window.addEventListener("scroll", reveal);
+        reveal(); // Trigger on load
+
+        // Anti-Gravity Floating Particles Canvas Logic
+        const canvas = document.getElementById('anti-gravity-canvas');
+        const ctx = canvas.getContext('2d');
+        let particlesArray;
+
+        // Sync canvas size with window
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Mouse interaction coordinates
+        let mouse = {
+            x: null,
+            y: null,
+            radius: 150 // Area of anti-gravity repulsion
+        }
+
+        window.addEventListener('mousemove', function(event) {
+            mouse.x = event.x;
+            mouse.y = event.y;
+        });
+
+        window.addEventListener('mouseout', function() {
+            mouse.x = undefined;
+            mouse.y = undefined;
+        });
+
+        // Create Particle Blueprint
+        class Particle {
+            constructor(x, y, directionX, directionY, size, color) {
+                this.x = x;
+                this.y = y;
+                this.directionX = directionX;
+                this.directionY = directionY;
+                this.size = size;
+                this.color = color;
+            }
+            // Draw individual particle
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+                ctx.fillStyle = '#dc2626'; // Red nodes
+                ctx.fill();
+            }
+            // Check particle position, move, apply anti-gravity
+            update() {
+                // Keep particles inside canvas
+                if (this.x > canvas.width || this.x < 0) {
+                    this.directionX = -this.directionX;
+                }
+                if (this.y > canvas.height || this.y < 0) {
+                    this.directionY = -this.directionY;
+                }
+
+                // Anti-gravity Collision detection (mouse repels particles)
+                let dx = mouse.x - this.x;
+                let dy = mouse.y - this.y;
+                let distance = Math.sqrt(dx*dx + dy*dy);
+                if (distance < mouse.radius + this.size) {
+                    if (mouse.x < this.x && this.x < canvas.width - this.size * 10) {
+                        this.x += 3;
+                    }
+                    if (mouse.x > this.x && this.x > this.size * 10) {
+                        this.x -= 3;
+                    }
+                    if (mouse.y < this.y && this.y < canvas.height - this.size * 10) {
+                        this.y += 3;
+                    }
+                    if (mouse.y > this.y && this.y > this.size * 10) {
+                        this.y -= 3;
+                    }
+                }
+                
+                // Move particle
+                this.x += this.directionX;
+                this.y += this.directionY;
+                this.draw();
+            }
+        }
+
+        // Initialize particle network
+        function init() {
+            particlesArray = [];
+            let numberOfParticles = (canvas.height * canvas.width) / 12000;
+            // Cap the max particles for performance
+            if(numberOfParticles > 150) numberOfParticles = 150; 
+            
+            for (let i = 0; i < numberOfParticles; i++) {
+                let size = (Math.random() * 2) + 1;
+                let x = (Math.random() * ((innerWidth - size * 2) - (size * 2)) + size * 2);
+                let y = (Math.random() * ((innerHeight - size * 2) - (size * 2)) + size * 2);
+                let directionX = (Math.random() * 1) - 0.5; // Very slow movement for gravity effect
+                let directionY = (Math.random() * 1) - 0.5;
+                let color = '#dc2626';
+
+                particlesArray.push(new Particle(x, y, directionX, directionY, size, color));
+            }
+        }
+
+        // Draw connections between particles
+        function connect() {
+            let opacityValue = 1;
+            for (let a = 0; a < particlesArray.length; a++) {
+                for (let b = a; b < particlesArray.length; b++) {
+                    let distance = ((particlesArray[a].x - particlesArray[b].x) * (particlesArray[a].x - particlesArray[b].x))
+                    + ((particlesArray[a].y - particlesArray[b].y) * (particlesArray[a].y - particlesArray[b].y));
+                    if (distance < (canvas.width/7) * (canvas.height/7)) {
+                        opacityValue = 1 - (distance/15000);
+                        ctx.strokeStyle = 'rgba(220, 38, 38,' + opacityValue + ')';
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+                        ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        // Animation Loop
+        function animate() {
+            requestAnimationFrame(animate);
+            ctx.clearRect(0,0,innerWidth, innerHeight);
+
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+            }
+            connect();
+        }
+
+        // Handle resize
+        window.addEventListener('resize', function(){
+            canvas.width = innerWidth;
+            canvas.height = innerHeight;
+            init();
+        });
+
+        // Start the effect
+        init();
+        animate();
+
+    </script>
+
+    <!-- Application Backend & Auth Logic (Firebase) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Custom Toast Notification System
+        const toastContainer = document.getElementById('toast-container');
+        window.showToast = function(msg, type = 'success') {
+            const toast = document.createElement('div');
+            const colorClass = type === 'success' ? 'bg-green-500/10 border-green-500/30 text-green-400' : 'bg-red-500/10 border-red-500/30 text-red-400';
+            const icon = type === 'success' ? 'ph-check-circle' : 'ph-warning';
+            
+            toast.className = `flex items-center gap-2 px-4 py-3 rounded border ${colorClass} font-mono-custom text-sm transform translate-x-full transition-transform duration-300 backdrop-blur-md`;
+            toast.innerHTML = `<i class="ph ${icon} text-lg"></i> ${msg}`;
+            
+            toastContainer.appendChild(toast);
+            
+            // Slide in animation
+            setTimeout(() => { toast.classList.remove('translate-x-full'); }, 10);
+            
+            // Remove smoothly after 3 seconds
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        };
+
+        // Modal Logic
+        const loginModal = document.getElementById('login-modal');
+        const loginModalContent = document.getElementById('login-modal-content');
+        const loginTypeTarget = document.getElementById('login-type-target');
+        const loginModalTitle = document.getElementById('login-modal-title');
+        const loginModalDesc = document.getElementById('login-modal-desc');
+        const loginHint = document.getElementById('login-hint');
+        
+        function openLoginModal(type) {
+            loginTypeTarget.value = type;
+            
+            if(type === 'admin') {
+                loginModalTitle.innerHTML = 'Secure Access';
+                loginModalDesc.innerText = 'Enter administrative credentials to access the command center.';
+                loginHint.innerText = 'Hint: type "admin" to demo';
+            } else {
+                loginModalTitle.innerHTML = 'Operator Login';
+                loginModalDesc.innerText = 'Enter your issued callsign passphrase to access the HUD.';
+                loginHint.innerText = 'Hint: type "operator" to demo';
+            }
+
+            loginModal.classList.remove('hidden');
+            setTimeout(() => {
+                loginModal.classList.remove('opacity-0');
+                loginModalContent.classList.remove('scale-95');
+            }, 10);
+            
+            // Focus input
+            setTimeout(() => document.getElementById('admin-password').focus(), 100);
+        }
+
+        function closeLoginModal() {
+            loginModal.classList.add('opacity-0');
+            loginModalContent.classList.add('scale-95');
+            setTimeout(() => { loginModal.classList.add('hidden'); }, 300);
+        }
+
+        // Event listeners for login buttons
+        document.getElementById('nav-admin-btn').addEventListener('click', () => openLoginModal('admin'));
+        document.getElementById('mobile-admin-btn').addEventListener('click', () => {
+            document.getElementById('mobile-menu').classList.add('hidden');
+            openLoginModal('admin');
+        });
+        
+        document.getElementById('nav-portal-btn').addEventListener('click', () => openLoginModal('operator'));
+        document.getElementById('mobile-portal-btn').addEventListener('click', () => {
+            document.getElementById('mobile-menu').classList.add('hidden');
+            openLoginModal('operator');
+        });
+
+        document.getElementById('close-login-btn').addEventListener('click', closeLoginModal);
+        
+        // Dashboard Toggle Logic
+        const adminDashboard = document.getElementById('admin-dashboard');
+        const operatorDashboard = document.getElementById('operator-dashboard');
+        const landingSections = ['nav', '#home', '#services', '#bootcamp', '#intel', '#team', '#contact', 'footer'];
+        
+        function toggleDashboard(type, show) {
+            if (show) {
+                // Hide main site
+                landingSections.forEach(selector => {
+                    const el = document.querySelector(selector);
+                    if(el) el.style.display = 'none';
+                });
+                
+                // Show specific dashboard
+                if (type === 'admin') {
+                    adminDashboard.classList.remove('hidden');
+                } else if (type === 'operator') {
+                    operatorDashboard.classList.remove('hidden');
+                }
+                
+                document.body.style.overflow = 'auto';
+                window.scrollTo(0,0);
+            } else {
+                // Restore main site
+                landingSections.forEach(selector => {
+                    const el = document.querySelector(selector);
+                    if(el) el.style.display = '';
+                });
+                adminDashboard.classList.add('hidden');
+                operatorDashboard.classList.add('hidden');
+            }
+        }
+
+        // --- Firebase Backend Setup ---
+        let db, auth;
+        let unsubscribeUsers = null;
+        const appId = typeof window.__app_id !== 'undefined' ? window.__app_id : 'royal-sec-demo';
+        
+        try {
+            const firebaseConfigStr = typeof window.__firebase_config !== 'undefined' ? window.__firebase_config : '{}';
+            const firebaseConfig = JSON.parse(firebaseConfigStr);
+            
+            if (Object.keys(firebaseConfig).length > 0) {
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                
+                // Initialize Auth Immediately
+                const initAuth = async () => {
+                    try {
+                        if (typeof window.__initial_auth_token !== 'undefined' && window.__initial_auth_token) {
+                            await signInWithCustomToken(auth, window.__initial_auth_token);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                    } catch (e) {
+                        console.error("Auth init error:", e);
+                    }
+                };
+                initAuth();
+            } else {
+                console.warn("No Firebase Config found. Dashboard falling back to Local Mock Mode.");
+            }
+        } catch(e) {
+            console.error("Firebase init failed:", e);
+        }
+
+        const isDatabaseActive = !!db;
+        
+        // --- Public Data Init (WhatsApp Link) ---
+        let mockConfig = { whatsapp_link: "https://whatsapp.com/channel/royal-security-demo" };
+        let unsubscribeConfig = null;
+
+        function initPublicData() {
+            if (isDatabaseActive) {
+                const configRef = doc(db, 'artifacts', appId, 'public', 'config');
+                unsubscribeConfig = onSnapshot(configRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        const link = docSnap.data().whatsapp_link;
+                        updateWhatsAppUI(link);
+                        if(document.getElementById('config-wa-link')) {
+                            document.getElementById('config-wa-link').value = link || '';
+                        }
+                    }
+                });
+            } else {
+                updateWhatsAppUI(mockConfig.whatsapp_link);
+            }
+        }
+        
+        function updateWhatsAppUI(link) {
+            const waFooter = document.getElementById('wa-link-footer');
+            if(waFooter) {
+                waFooter.href = link || '#';
+                if(!link) waFooter.classList.add('hidden');
+                else waFooter.classList.remove('hidden');
+            }
+        }
+        
+        initPublicData(); // Trigger immediately on site load
+
+        // Mock data fallback in case user runs outside environment
+        let mockUsers = [
+            { id: '1', name: 'Alpha Actual', role: 'Admin', status: 'Active' },
+            { id: '2', name: 'Bravo-2', role: 'Operator', status: 'Active' }
+        ];
+
+        // Simulated Secure Authentication Check
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const pass = document.getElementById('admin-password').value.toLowerCase();
+            const type = document.getElementById('login-type-target').value;
+            const btnText = document.getElementById('login-btn-text');
+            
+            btnText.innerText = "Authenticating...";
+            
+            setTimeout(() => {
+                if(type === 'admin' && pass === 'admin') {
+                    closeLoginModal();
+                    document.getElementById('admin-password').value = '';
+                    showToast("Authentication Successful. Welcome to Command.");
+                    toggleDashboard('admin', true);
+                    loadDashboardData(); 
+                } else if (type === 'operator' && pass === 'operator') {
+                    closeLoginModal();
+                    document.getElementById('admin-password').value = '';
+                    showToast("Identity Verified. HUD Online.");
+                    toggleDashboard('operator', true);
+                    // Init terminal auto-focus
+                    setTimeout(() => document.getElementById('terminal-input').focus(), 500);
+                } else {
+                    showToast("Access Denied. Invalid Passphrase.", "error");
+                }
+                btnText.innerText = "Authenticate";
+            }, 800);
+        });
+
+        // Logout Listeners
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            toggleDashboard('admin', false);
+            if (unsubscribeUsers) unsubscribeUsers();
+            showToast("Secure connection terminated.");
+        });
+        
+        document.getElementById('operator-logout-btn').addEventListener('click', () => {
+            toggleDashboard('operator', false);
+            showToast("HUD Offline. Session cleared.");
+        });
+
+        // Load & Sync Dashboard Data from Firestore
+        function loadDashboardData() {
+            const tableBody = document.getElementById('users-table-body');
+            
+            if (isDatabaseActive && auth.currentUser) {
+                const usersRef = collection(db, 'artifacts', appId, 'public', 'data', 'managed_accounts');
+                
+                tableBody.innerHTML = '<tr><td colspan="4" class="px-6 py-8 text-center text-gray-500"><i class="ph ph-spinner animate-spin text-2xl mb-2"></i><br>Syncing with mainframe...</td></tr>';
+                
+                if (unsubscribeUsers) unsubscribeUsers();
+                
+                // Real-time listener
+                unsubscribeUsers = onSnapshot(usersRef, (snapshot) => {
+                    const users = [];
+                    snapshot.forEach(doc => {
+                        users.push({ id: doc.id, ...doc.data() });
+                    });
+                    renderUsersTable(users);
+                }, (error) => {
+                    console.error("Sync error:", error);
+                    showToast("Database connection lost.", "error");
+                });
+            } else {
+                // Mock mode
+                renderUsersTable(mockUsers);
+            }
+        }
+
+        // Render the Accounts UI
+        function renderUsersTable(users) {
+            const tableBody = document.getElementById('users-table-body');
+            const countDisplay = document.getElementById('account-count');
+            
+            countDisplay.innerText = `${users.length}/5`;
+            
+            if (users.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="4" class="px-6 py-8 text-center text-gray-500">No active accounts found in database.</td></tr>';
+                return;
+            }
+            
+            tableBody.innerHTML = '';
+            users.forEach(user => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-white/5 transition';
+                tr.innerHTML = `
+                    <td class="px-6 py-4 font-bold text-white">${user.name}</td>
+                    <td class="px-6 py-4"><span class="px-2 py-1 bg-white/10 rounded text-xs border border-white/10">${user.role || 'Operator'}</span></td>
+                    <td class="px-6 py-4"><span class="text-green-400 flex items-center gap-1"><i class="ph-fill ph-circle text-[8px]"></i> Active</span></td>
+                    <td class="px-6 py-4 text-right">
+                        <button onclick="deleteAccount('${user.id}')" class="text-red-500 hover:text-white p-2 bg-red-500/10 hover:bg-red-500 rounded transition" title="Revoke Access">
+                            <i class="ph ph-trash text-lg"></i>
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // Create New Account (Max 5)
+        document.getElementById('add-user-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('new-user-name').value;
+            const role = document.getElementById('new-user-role').value;
+            
+            const currentCount = parseInt(document.getElementById('account-count').innerText.split('/')[0]);
+            
+            if (currentCount >= 5) {
+                showToast("System maximum capacity reached (5/5). Revoke an account first.", "error");
+                return;
+            }
+
+            const newUser = {
+                name: name,
+                role: role,
+                status: 'Active',
+                createdAt: new Date().toISOString()
+            };
+
+            if (isDatabaseActive && auth.currentUser) {
+                try {
+                    const newDocRef = doc(collection(db, 'artifacts', appId, 'public', 'data', 'managed_accounts'));
+                    await setDoc(newDocRef, newUser);
+                    showToast("Account provisioned successfully.");
+                    document.getElementById('add-user-form').reset();
+                } catch(e) {
+                    showToast("Failed to write to database.", "error");
+                }
+            } else {
+                // Mock behavior
+                newUser.id = Date.now().toString();
+                mockUsers.push(newUser);
+                renderUsersTable(mockUsers);
+                showToast("Account provisioned (Mock DB).");
+                document.getElementById('add-user-form').reset();
+            }
+        });
+
+        // Global Delete Account Function
+        window.deleteAccount = async function(id) {
+            if (isDatabaseActive && auth.currentUser) {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'managed_accounts', id));
+                    showToast("Account access revoked.");
+                } catch(e) {
+                    showToast("Failed to remove account.", "error");
+                }
+            } else {
+                mockUsers = mockUsers.filter(u => u.id !== id);
+                renderUsersTable(mockUsers);
+                showToast("Account access revoked (Mock DB).");
+            }
+        };
+
+        // Update WhatsApp Config (Admin)
+        document.getElementById('update-config-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const link = document.getElementById('config-wa-link').value;
+            
+            if (isDatabaseActive && auth.currentUser) {
+                try {
+                    const configRef = doc(db, 'artifacts', appId, 'public', 'config');
+                    // using setDoc with merge to avoid overwriting future configs
+                    await setDoc(configRef, { whatsapp_link: link }, { merge: true });
+                    showToast("Comms link updated across all nodes.");
+                } catch(e) {
+                    showToast("Failed to update system config.", "error");
+                }
+            } else {
+                mockConfig.whatsapp_link = link;
+                updateWhatsAppUI(link);
+                showToast("Comms link updated (Mock DB).");
+            }
+        });
+
+        // --- Operator HUD & Interactive Terminal Logic ---
+        
+        // Tab Switching
+        window.switchOperatorTab = function(tab) {
+            const syllabusView = document.getElementById('view-syllabus');
+            const rangeView = document.getElementById('view-range');
+            const btnSyllabus = document.getElementById('tab-syllabus');
+            const btnRange = document.getElementById('tab-range');
+
+            if (tab === 'syllabus') {
+                syllabusView.classList.remove('hidden');
+                rangeView.classList.add('hidden');
+                
+                btnSyllabus.className = "w-full text-left px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white font-mono-custom text-sm uppercase tracking-wider flex items-center gap-3 transition";
+                btnRange.className = "w-full text-left px-4 py-3 bg-black border border-white/5 hover:border-white/20 rounded-lg text-gray-400 hover:text-white font-mono-custom text-sm uppercase tracking-wider flex items-center gap-3 transition";
+            } else {
+                syllabusView.classList.add('hidden');
+                rangeView.classList.remove('hidden');
+                
+                btnRange.className = "w-full text-left px-4 py-3 bg-white/10 border border-green-500/30 rounded-lg text-white font-mono-custom text-sm uppercase tracking-wider flex items-center gap-3 transition";
+                btnSyllabus.className = "w-full text-left px-4 py-3 bg-black border border-white/5 hover:border-white/20 rounded-lg text-gray-400 hover:text-white font-mono-custom text-sm uppercase tracking-wider flex items-center gap-3 transition";
+                
+                document.getElementById('terminal-input').focus();
+            }
+        }
+
+        // Terminal Interactive Logic
+        const termInput = document.getElementById('terminal-input');
+        const termOutput = document.getElementById('terminal-output');
+
+        const mockFilesystem = {
+            'nmap': 'Nmap 7.93 ( https://nmap.org )\nUsage: nmap [Scan Type(s)] [Options] {target specification}',
+            'enum4linux': 'enum4linux v0.9.1 (http://labs.portcullis.co.uk/application/enum4linux/)\nUsage: ./enum4linux [options] ip',
+        };
+
+        const commandResponses = {
+            'help': 'Available commands:\n- nmap [target]\n- enum4linux [target]\n- whoami\n- clear\n\nTarget IP for Day 3 Lab: 10.10.5.42',
+            'whoami': 'operator\nuid=1000(operator) gid=1000(operator) groups=1000(operator),4(adm),24(cdrom),27(sudo)',
+            'nmap 10.10.5.42': 'Starting Nmap 7.93 ( https://nmap.org ) at 2026-07-04 10:45 PKT\nNmap scan report for 10.10.5.42\nHost is up (0.045s latency).\nNot shown: 996 closed tcp ports (conn-refused)\nPORT    STATE SERVICE\n21/tcp  open  ftp\n22/tcp  open  ssh\n139/tcp open  netbios-ssn\n445/tcp open  microsoft-ds\n\nNmap done: 1 IP address (1 host up) scanned in 2.14 seconds',
+            'nmap -p- 10.10.5.42': 'Scanning all ports... this may take a moment.\nDiscovered open port 21/tcp on 10.10.5.42\nDiscovered open port 22/tcp on 10.10.5.42\nDiscovered open port 139/tcp on 10.10.5.42\nDiscovered open port 445/tcp on 10.10.5.42\nDiscovered open port 8080/tcp on 10.10.5.42',
+            'nmap -A 10.10.5.42': 'Starting Nmap 7.93... [Advanced Scan]\nPORT    STATE SERVICE      VERSION\n21/tcp  open  ftp          vsftpd 3.0.3\n| ftp-anon: Anonymous FTP login allowed (FTP code 230)\n22/tcp  open  ssh          OpenSSH 8.2p1 Ubuntu 4ubuntu0.5\n139/tcp open  netbios-ssn  Samba smbd 4.6.2\n445/tcp open  microsoft-ds Samba smbd 4.6.2',
+            'enum4linux 10.10.5.42': 'Starting enum4linux v0.9.1 ( http://labs.portcullis.co.uk/application/enum4linux/ )\n...\n[+] Enumerating Workgroup/Domain on 10.10.5.42\n[+] Got domain/workgroup name: ROYAL-LAB\n\n[+] Enumerating Users via RID Cycling\n[I] Found user: administrator (RID: 500)\n[I] Found user: guest (RID: 501)\n[I] Found user: svc_backup (RID: 1002)\n\n[+] Enumerating Shares\nSharename       Type      Comment\n---------       ----      -------\nprint$          Disk      Printer Drivers\nIPC$            IPC       IPC Service\nBackup$         Disk      Backup Repository (Anonymous Read Allowed)'
+        };
+
+        termInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                const cmdLine = this.value.trim();
+                if (!cmdLine) return;
+
+                // Print the user's input
+                printToTerminal(`operator@kali:~$ ${cmdLine}`, 'text-gray-300');
+                this.value = '';
+
+                const normalizedCmd = cmdLine.toLowerCase().replace(/\s+/g, ' ');
+
+                if (normalizedCmd === 'clear') {
+                    termOutput.innerHTML = '';
+                    return;
+                }
+
+                // Simulate processing delay
+                setTimeout(() => {
+                    if (commandResponses[normalizedCmd]) {
+                        printToTerminal(commandResponses[normalizedCmd], 'text-gray-400');
+                    } else if (normalizedCmd.startsWith('nmap ') || normalizedCmd.startsWith('enum4linux ')) {
+                        printToTerminal(`Error: Failed to resolve target or invalid flags. Try scanning 10.10.5.42\nType 'help' for examples.`, 'text-red-400');
+                    } else if (mockFilesystem[normalizedCmd]) {
+                         printToTerminal(mockFilesystem[normalizedCmd], 'text-gray-400');
+                    } else {
+                        printToTerminal(`bash: ${cmdLine.split(' ')[0]}: command not found`, 'text-red-400');
+                    }
+                }, 300);
+            }
+        });
+
+        function printToTerminal(text, colorClass) {
+            const div = document.createElement('div');
+            div.className = `mb-2 whitespace-pre-wrap ${colorClass}`;
+            div.textContent = text;
+            termOutput.appendChild(div);
+            termOutput.scrollTop = termOutput.scrollHeight;
+        }
+
+    </script>
+</body>
+</html>
