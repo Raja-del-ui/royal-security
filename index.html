@@ -280,7 +280,7 @@
             
             <form id="contact-form" class="bg-gray-900 p-8 rounded-lg border border-gray-800 text-left max-w-2xl mx-auto shadow-xl">
                 <!-- Replace value with your actual Web3Forms Access Key later -->
-                <input type="hidden" name="access_key" value="YOUR_WEB3FORMS_KEY_HERE">
+                <input type="hidden" name="access_key" value="dd39ae8b-7950-4096-ba9c-e19c4c603640">
                 <input type="hidden" name="subject" value="New Royal Security Deployment Request">
                 <input type="checkbox" name="botcheck" class="hidden" style="display: none;">
 
@@ -323,7 +323,7 @@
                 <h3 class="text-white font-bold text-xl font-mono"><i class="fa-solid fa-lock text-red-500 mr-2"></i> SYSTEM LOGIN</h3>
                 <button onclick="closeModals()" class="text-gray-500 hover:text-white"><i class="fa-solid fa-times"></i></button>
             </div>
-            <input type="text" id="auth-user" class="w-full bg-black border border-gray-700 rounded p-3 text-green-500 font-mono focus:outline-none focus:border-red-600 transition mb-4 text-center" placeholder="Callsign">
+            <input type="text" id="auth-user" class="w-full bg-black border border-gray-700 rounded p-3 text-green-500 font-mono focus:outline-none focus:border-red-600 transition mb-4 text-center" placeholder="Callsign (or Admin Email)">
             <input type="password" id="auth-pass" class="w-full bg-black border border-gray-700 rounded p-3 text-green-500 font-mono focus:outline-none focus:border-red-600 transition mb-4 text-center" placeholder="Password">
             <button onclick="attemptLogin()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition">AUTHENTICATE</button>
             <p id="auth-error" class="text-red-500 text-xs mt-3 hidden text-center">ACCESS DENIED</p>
@@ -333,7 +333,10 @@
         <div id="admin-modal" class="bg-gray-900 border border-gray-700 p-0 rounded-lg max-w-6xl w-full hidden relative z-10 h-[85vh] flex flex-col overflow-hidden">
             <div class="flex justify-between items-center p-4 border-b border-gray-800 bg-black">
                 <h3 class="text-white font-bold text-xl"><i class="fa-solid fa-server text-red-500 mr-2"></i> ADMIN COMMAND CENTER</h3>
-                <button onclick="closeModals()" class="text-gray-500 hover:text-white"><i class="fa-solid fa-times text-xl"></i></button>
+                <div class="flex items-center gap-5">
+                    <button onclick="signOutAdmin()" class="text-xs font-bold text-gray-400 hover:text-red-500 transition" title="End this admin session"><i class="fa-solid fa-right-from-bracket mr-1"></i> SIGN OUT</button>
+                    <button onclick="closeModals()" class="text-gray-500 hover:text-white"><i class="fa-solid fa-times text-xl"></i></button>
+                </div>
             </div>
             
             <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
@@ -348,14 +351,12 @@
                     
                     <div id="tab-users" class="admin-tab active">
                         <h4 class="text-white font-bold mb-4 border-b border-gray-800 pb-2">Access Control (Secure Hash Protocol)</h4>
-                        <div class="flex flex-col sm:flex-row gap-2 mb-6 bg-black p-4 rounded border border-gray-800">
+                        <div class="flex flex-col sm:flex-row gap-2 mb-2 bg-black p-4 rounded border border-gray-800">
                             <input type="text" id="new-user-callsign" placeholder="Callsign" class="bg-gray-900 border border-gray-700 rounded p-2 text-white text-sm flex-1">
                             <input type="text" id="new-user-pass" placeholder="Password (Will be encrypted)" class="bg-gray-900 border border-gray-700 rounded p-2 text-white text-sm flex-1">
-                            <select id="new-user-role" class="bg-gray-900 border border-gray-700 rounded p-2 text-white text-sm w-full sm:w-32">
-                                <option value="Operator">Operator</option><option value="Admin">Admin</option>
-                            </select>
                             <button onclick="addUser()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-bold transition">Add User</button>
                         </div>
+                        <p class="text-xs text-gray-500 mb-6">Accounts added here are Operator (student HUD) logins only. Admin access is granted in Firebase Console &rarr; Authentication, then signing in above with that email.</p>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-sm text-gray-400 min-w-full">
                                 <thead class="bg-black text-gray-300"><tr><th class="p-2 rounded-tl">Callsign</th><th class="p-2">Password Hash</th><th class="p-2">Role</th><th class="p-2 rounded-tr text-right">Action</th></tr></thead>
@@ -384,7 +385,7 @@
                                 <input type="text" id="new-intel-title" placeholder="Blog Title" class="bg-gray-900 border border-gray-700 rounded p-2 text-white text-sm flex-1">
                             </div>
                             <input type="text" id="new-intel-short" placeholder="Short description for card..." class="bg-gray-900 border border-gray-700 rounded p-2 text-white text-sm">
-                            <textarea id="new-intel-full" rows="4" placeholder="Full Blog Content (HTML allowed)..." class="bg-gray-900 border border-gray-700 rounded p-2 text-white text-sm font-mono"></textarea>
+                            <textarea id="new-intel-full" rows="4" placeholder="Full blog content (plain text, line breaks preserved)..." class="bg-gray-900 border border-gray-700 rounded p-2 text-white text-sm font-mono"></textarea>
                             <button onclick="addIntelBlog()" class="bg-red-600 hover:bg-red-700 text-white py-2 rounded font-bold transition">Publish Log</button>
                         </div>
                         <div id="admin-intel-list" class="space-y-2"></div>
@@ -459,7 +460,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
         // ================== BOOT SEQUENCE (OP 1) ==================
         document.addEventListener("DOMContentLoaded", async () => {
@@ -575,13 +576,23 @@
                 allIntel = intelSnap.docs.map(d => ({id: d.id, ...d.data()}));
                 if(allIntel.length === 0) window.injectMockIntel(); else renderIntelToUI();
 
-                const userSnap = await getDocs(collection(db, 'artifacts', appId, 'users'));
-                allUsers = userSnap.docs.map(d => ({id: d.id, ...d.data()}));
-                renderUsersAdminTable();
-
             } catch (e) { 
                 console.error("CMS Fetch Error. You likely need to update Firebase Rules.", e); 
                 window.injectMockData(); 
+            }
+        }
+
+        // Operator/Admin account list contains password hashes, so it is only
+        // ever fetched for an already-authenticated Admin session - never on
+        // page load for ordinary visitors.
+        async function loadOperatorAccounts() {
+            if(!isDatabaseLive || !loggedInUser || loggedInUser.role !== 'Admin') return;
+            try {
+                const userSnap = await getDocs(collection(db, 'artifacts', appId, 'users'));
+                allUsers = userSnap.docs.map(d => ({id: d.id, ...d.data()}));
+                renderUsersAdminTable();
+            } catch (e) {
+                console.error("Operator list fetch failed.", e);
             }
         }
 
@@ -634,9 +645,9 @@
 
         window.addUser = async () => {
             if (!loggedInUser || loggedInUser.role !== 'Admin') return showToast("SECURITY EXCEPTION: UNAUTHORIZED");
-            const c = escapeHTML(getEl('new-user-callsign').value.trim());
+            const c = getEl('new-user-callsign').value.trim();
             const p = getEl('new-user-pass').value.trim();
-            const r = getEl('new-user-role').value;
+            const r = 'Operator'; // Real Admin accounts are provisioned via Firebase Auth, not here - see note above.
             if(!c || !p) return showToast("Requires Callsign and Password");
             
             // Hash password before saving to DB
@@ -646,19 +657,19 @@
                 try {
                     await setDoc(doc(collection(db, 'artifacts', appId, 'users')), { callsign: c, password: hashedPassword, role: r });
                     getEl('new-user-callsign').value = ''; getEl('new-user-pass').value = '';
-                    fetchAllCMSData(); showToast("Operator Provisioned Securely");
+                    loadOperatorAccounts(); showToast("Operator Provisioned Securely");
                 } catch (e) { showToast("DB ERROR: Write Access Denied by Rules."); }
             }
         };
         
         window.deleteUser = async (id) => { 
             if (!loggedInUser || loggedInUser.role !== 'Admin') return showToast("SECURITY EXCEPTION: UNAUTHORIZED");
-            if(isDatabaseLive){ try { await deleteDoc(doc(db, 'artifacts', appId, 'users', id)); fetchAllCMSData(); showToast("User Purged"); } catch(e){ showToast("DB ERROR: Write Denied."); } } 
+            if(isDatabaseLive){ try { await deleteDoc(doc(db, 'artifacts', appId, 'users', id)); loadOperatorAccounts(); showToast("User Purged"); } catch(e){ showToast("DB ERROR: Write Denied."); } } 
         };
 
         window.addTeamMember = async () => {
             if (!loggedInUser || loggedInUser.role !== 'Admin') return showToast("SECURITY EXCEPTION: UNAUTHORIZED");
-            const data = { name: escapeHTML(getEl('new-team-name').value), role: escapeHTML(getEl('new-team-role').value), initials: escapeHTML(getEl('new-team-initials').value), desc: escapeHTML(getEl('new-team-desc').value) };
+            const data = { name: getEl('new-team-name').value.trim(), role: getEl('new-team-role').value.trim(), initials: getEl('new-team-initials').value.trim(), desc: getEl('new-team-desc').value.trim() };
             if(!data.name) return;
             if(isDatabaseLive) {
                 try { await setDoc(doc(collection(db, 'artifacts', appId, 'team')), data); getEl('new-team-name').value=''; getEl('new-team-role').value=''; getEl('new-team-initials').value=''; getEl('new-team-desc').value=''; fetchAllCMSData(); showToast("Team Updated"); } 
@@ -672,7 +683,7 @@
 
         window.addIntelBlog = async () => {
             if (!loggedInUser || loggedInUser.role !== 'Admin') return showToast("SECURITY EXCEPTION: UNAUTHORIZED");
-            const data = { type: escapeHTML(getEl('new-intel-type').value), title: escapeHTML(getEl('new-intel-title').value), short: escapeHTML(getEl('new-intel-short').value), full: escapeHTML(getEl('new-intel-full').value) };
+            const data = { type: getEl('new-intel-type').value.trim(), title: getEl('new-intel-title').value.trim(), short: getEl('new-intel-short').value.trim(), full: getEl('new-intel-full').value.trim() };
             if(!data.title) return;
             if(isDatabaseLive) {
                 try { await setDoc(doc(collection(db, 'artifacts', appId, 'intel')), data); getEl('new-intel-title').value=''; getEl('new-intel-short').value=''; getEl('new-intel-full').value=''; fetchAllCMSData(); showToast("Intel Log Published"); } 
@@ -686,51 +697,62 @@
 
         window.attemptLogin = async () => {
             initAudio();
-            const callsign = escapeHTML(getEl('auth-user').value.trim());
+            // Admins sign in with the email address of the account created in
+            // Firebase Console -> Authentication (see setup notes). Operators
+            // (bootcamp students) sign in with their Callsign as before.
+            const identifier = getEl('auth-user').value.trim();
             const pass = getEl('auth-pass').value.trim();
             const errEl = getEl('auth-error');
-            
-            // SECURITY OVERRIDE: Check if default backdoor is disabled
-            const hasRealAdmin = allUsers.some(u => u.role === 'Admin');
-            if (callsign === 'admin' && pass === 'royaladmin') {
-                if (hasRealAdmin) {
-                    playAccessDenied(); 
-                    errEl.innerText = "DEFAULT BACKDOOR DISABLED."; 
-                    errEl.classList.remove('hidden'); return;
-                }
-                // Backdoor Allowed (First Time Setup)
-                loggedInUser = { callsign: 'admin', role: 'Admin' };
-                playAccessGranted(); closeModals();
-                getEl('admin-modal').classList.remove('hidden'); getEl('modal-overlay').classList.remove('hidden');
-                getEl('auth-pass').value = ''; return;
+            errEl.classList.add('hidden');
+
+            if(!isDatabaseLive) {
+                playAccessDenied(); errEl.innerText = "DB OFFLINE (Mock Mode Only)"; errEl.classList.remove('hidden');
+                return;
             }
 
-            if(isDatabaseLive) {
+            // 1) Try real Admin auth first - verified server-side by Firebase,
+            //    not by anything running in this browser tab.
+            if (identifier.includes('@')) {
                 try {
-                    // Hash input password to compare with DB hash
-                    const hashedPassword = await hashPassword(pass);
-                    const q = query(collection(db, 'artifacts', appId, 'users'), where('callsign', '==', callsign), where('password', '==', hashedPassword));
-                    const snap = await getDocs(q);
-                    
-                    if(!snap.empty) {
-                        const user = snap.docs[0].data();
-                        loggedInUser = user;
-                        playAccessGranted(); closeModals();
-                        if(user.role === 'Admin') {
-                            getEl('admin-modal').classList.remove('hidden'); getEl('modal-overlay').classList.remove('hidden');
-                        } else {
-                            getEl('student-modal').classList.remove('hidden'); getEl('modal-overlay').classList.remove('hidden');
-                        }
-                        getEl('auth-pass').value = '';
-                    } else { throw new Error("Denied"); }
-                } catch(e) { 
-                    playAccessDenied(); 
-                    errEl.innerText = "ACCESS DENIED"; 
-                    errEl.classList.remove('hidden'); 
+                    const cred = await signInWithEmailAndPassword(auth, identifier, pass);
+                    loggedInUser = { callsign: cred.user.email, role: 'Admin' };
+                    playAccessGranted(); closeModals();
+                    getEl('admin-modal').classList.remove('hidden'); getEl('modal-overlay').classList.remove('hidden');
+                    getEl('auth-pass').value = '';
+                    loadOperatorAccounts();
+                    return;
+                } catch (e) {
+                    // Not a valid admin login - fall through to the Operator check
+                    // below (in case a student's callsign happens to contain "@").
                 }
-            } else {
-                playAccessDenied(); errEl.innerText = "DB OFFLINE (Mock Mode Only)"; errEl.classList.remove('hidden');
             }
+
+            // 2) Operator (student) lookup - unchanged mechanism, view-only access.
+            const callsign = identifier;
+            try {
+                const hashedPassword = await hashPassword(pass);
+                const q = query(collection(db, 'artifacts', appId, 'users'), where('callsign', '==', callsign), where('password', '==', hashedPassword));
+                const snap = await getDocs(q);
+                
+                if(!snap.empty) {
+                    const user = snap.docs[0].data();
+                    loggedInUser = { ...user, role: 'Operator' }; // Admin can only come from Firebase Auth above.
+                    playAccessGranted(); closeModals();
+                    getEl('student-modal').classList.remove('hidden'); getEl('modal-overlay').classList.remove('hidden');
+                    getEl('auth-pass').value = '';
+                } else { throw new Error("Denied"); }
+            } catch(e) { 
+                playAccessDenied(); 
+                errEl.innerText = "ACCESS DENIED"; 
+                errEl.classList.remove('hidden'); 
+            }
+        };
+
+        window.signOutAdmin = async () => {
+            try { await signOut(auth); } catch(e) { /* no-op */ }
+            loggedInUser = null;
+            closeModals();
+            showToast("SESSION TERMINATED");
         };
 
         window.switchAdminTab = (tabId) => {
@@ -833,6 +855,15 @@
                 e.preventDefault();
                 const btn = getEl('form-submit-btn');
                 const status = getEl('form-status');
+                const accessKey = form.querySelector('[name="access_key"]').value;
+
+                if (!accessKey || accessKey === 'YOUR_WEB3FORMS_KEY_HERE') {
+                    status.innerText = "FORM NOT CONFIGURED YET. EMAIL royalsecurity.official@gmail.com DIRECTLY.";
+                    status.classList.remove('hidden', 'text-green-500');
+                    status.classList.add('text-red-500');
+                    setTimeout(() => { status.classList.add('hidden'); }, 6000);
+                    return;
+                }
                 
                 btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> TRANSMITTING...';
                 
