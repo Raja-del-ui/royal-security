@@ -308,7 +308,7 @@
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-center gap-6 mb-4">
                 <a href="mailto:royalsecurity.official@gmail.com" class="text-gray-500 hover:text-white transition"><i class="fa-solid fa-envelope text-xl"></i></a>
-                <a href="#" id="dynamic-whatsapp-link" target="_blank" class="text-gray-500 hover:text-white transition"><i class="fa-brands fa-whatsapp text-xl"></i></a>
+                <a href="#" id="dynamic-whatsapp-link" target="_blank" rel="noopener noreferrer" class="text-gray-500 hover:text-white transition"><i class="fa-brands fa-whatsapp text-xl"></i></a>
             </div>
             <p class="text-gray-600 text-sm font-mono">ROYAL SECURITY &copy; 2026.<br>royalsecurity.official@gmail.com</p>
         </div>
@@ -468,6 +468,7 @@
             const preloader = document.getElementById('boot-sequence');
             const sequence = [
                 "Initiating Royal OS kernel...",
+                "Wellcome to royal-sec...",
                 "Loading tactical modules................ [OK]",
                 "Decrypting operator assets.............. [OK]",
                 "Establishing secure C2 connection....... [OK]",
@@ -557,6 +558,12 @@
 
         async function fetchAllCMSData() {
             if(!isDatabaseLive) { window.injectMockData(); return; }
+
+            // Each section fetches and fails independently now. Before, one shared
+            // try/catch meant a permission error on ANY single read (e.g. rules not
+            // covering 'public/config') threw immediately and fell back to mock data
+            // for everything - including Team/Intel collections that might otherwise
+            // have loaded fine.
             try {
                 const confSnap = await getDoc(doc(db, 'artifacts', appId, 'public', 'config'));
                 if(confSnap.exists()) {
@@ -568,17 +575,26 @@
                         getEl('config-bootcamp').value = data.bootcamp;
                     }
                 }
+            } catch (e) {
+                console.error("Config fetch failed - check Firestore Rules for artifacts/*/public/config.", e);
+            }
+
+            try {
                 const teamSnap = await getDocs(collection(db, 'artifacts', appId, 'team'));
                 allTeam = teamSnap.docs.map(d => ({id: d.id, ...d.data()}));
                 if(allTeam.length === 0) window.injectMockTeam(); else renderTeamToUI();
-                
+            } catch (e) {
+                console.error("Team fetch failed - check Firestore Rules for artifacts/*/team.", e);
+                window.injectMockTeam();
+            }
+
+            try {
                 const intelSnap = await getDocs(collection(db, 'artifacts', appId, 'intel'));
                 allIntel = intelSnap.docs.map(d => ({id: d.id, ...d.data()}));
                 if(allIntel.length === 0) window.injectMockIntel(); else renderIntelToUI();
-
-            } catch (e) { 
-                console.error("CMS Fetch Error. You likely need to update Firebase Rules.", e); 
-                window.injectMockData(); 
+            } catch (e) {
+                console.error("Intel fetch failed - check Firestore Rules for artifacts/*/intel.", e);
+                window.injectMockIntel();
             }
         }
 
@@ -952,9 +968,17 @@
             if(getEl('auth-pass')) getEl('auth-pass').value=''; 
         };
 
-        const reveals = document.querySelectorAll('.reveal');
-        function checkReveal() { const wh = window.innerHeight; reveals.forEach(r => { if(r.getBoundingClientRect().top < wh-50) r.classList.add('active'); }); }
+        // Query fresh every call instead of once into a static list. The old version
+        // captured '.reveal' elements a single time at load, so anything injected
+        // later - the Command Hierarchy and Threat Intel cards, added once Firestore
+        // data or mock data arrives - was never in that list and never received the
+        // 'active' class, leaving those cards permanently at opacity:0.
+        function checkReveal() {
+            const wh = window.innerHeight;
+            document.querySelectorAll('.reveal:not(.active)').forEach(r => { if(r.getBoundingClientRect().top < wh-50) r.classList.add('active'); });
+        }
         window.addEventListener('scroll', checkReveal);
+        checkReveal(); // reveal anything already in view on first paint, without waiting for a scroll event
         
         // Anti-Gravity Background
         const netCanvas = getEl('network-canvas');
@@ -992,12 +1016,26 @@
         };
 
         // ================== SYSTEM BOOT ==================
+        // Previously this fired fetchAllCMSData() immediately, before anonymous
+        // sign-in had a chance to resolve. If Firestore Rules require an
+        // authenticated request (request.auth != null), those reads went out
+        // unauthenticated, were denied, and fell straight through to mock data -
+        // regardless of what was actually saved in the CMS. Now we wait for the
+        // auth state to actually settle (signed in, or anonymous sign-in explicitly
+        // failed) before fetching, and guard against fetching more than once.
+        let hasLoadedCMSData = false;
+        function loadCMSDataOnce() {
+            if(hasLoadedCMSData) return;
+            hasLoadedCMSData = true;
+            fetchAllCMSData();
+        }
+
         if(isDatabaseLive) {
-            // FORCED BOOT REPAIR: Fetch data immediately on load regardless of Auth status!
-            fetchAllCMSData(); 
-            
-            onAuthStateChanged(auth, user => { /* Auth observer initialized */ });
-            signInAnonymously(auth).catch(e => console.warn("Anon Auth Deferred - Data will still load via public rules."));
+            onAuthStateChanged(auth, user => { if(user) loadCMSDataOnce(); });
+            signInAnonymously(auth).catch(e => {
+                console.warn("Anonymous auth failed - loading CMS data without an auth context.", e);
+                loadCMSDataOnce();
+            });
         } else {
             window.injectMockData(); // Mock fallbacks
         }
