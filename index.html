@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Royal Security | Elite Red Team Bootcamp</title>
+    <meta name="description" content="Military-style Red Team cybersecurity firm and training bootcamp.">
+    
+    <meta property="og:title" content="Royal Security | Elite Red Team Bootcamp">
+    <meta property="og:description" content="Join the elite. Military-style cybersecurity training, penetration testing, and tactical operations.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://raja-del-ui.github.io/royal-security/">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=1080&auto=format&fit=crop">
+    <meta name="theme-color" content="#dc2626">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
+                    colors: { red: { 600: '#dc2626', 700: '#b91c1c' }, gray: { 800: '#1f2937', 900: '#111827' }, black: '#0a0a0a' }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+    <style>
+        body { background-color: #0a0a0a; color: #f3f4f6; overflow-x: hidden; }
+        #network-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.4; pointer-events: auto; }
+        .content-layer { position: relative; z-index: 10; }
+        .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s ease-out; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+        .animate-float { animation: float 4s ease-in-out infinite; }
+        .animate-float-delayed { animation: float 5s ease-in-out infinite 1s; }
+        .glitch-hover { position: relative; display: inline-block; }
+        .glitch-hover:hover::before, .glitch-hover:hover::after { content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: transparent; }
+        .glitch-hover:hover::before { left: 2px; text-shadow: -1px 0 red; clip: rect(24px, 550px, 90px, 0); animation: glitch-anim-2 3s infinite linear alternate-reverse; }
+        .glitch-hover:hover::after { left: -2px; text-shadow: -1px 0 blue; clip: rect(85px, 550px, 140px, 0); animation: glitch-anim 2.5s infinite linear alternate-reverse; }
+        @keyframes glitch-anim { 0% { clip: rect(21px, 9999px, 96px, 0); } 20% { clip: rect(77px, 9999px, 16px, 0); } 40% { clip: rect(56px, 9999px, 69px, 0); } 60% { clip: rect(11px, 9999px, 83px, 0); } 80% { clip: rect(93px, 9999px, 25px, 0); } 100% { clip: rect(42px, 9999px, 54px, 0); } }
+        @keyframes glitch-anim-2 { 0% { clip: rect(12px, 9999px, 59px, 0); } 20% { clip: rect(61px, 9999px, 14px, 0); } 40% { clip: rect(82px, 9999px, 88px, 0); } 60% { clip: rect(34px, 9999px, 35px, 0); } 80% { clip: rect(5px, 9999px, 63px, 0); } 100% { clip: rect(29px, 9999px, 72px, 0); } }
+        .crt-overlay { position: relative; }
+        .crt-overlay::after { content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06)); z-index: 2; background-size: 100% 2px, 3px 100%; pointer-events: none; }
+        #matrix-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; border-radius: 0.5rem; opacity: 0.8;}
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #dc2626; border-radius: 4px; }
+        
+        .admin-tab { display: none; }
+        .admin-tab.active { display: block; }
+        .tab-btn.active { background-color: #dc2626; color: white; border-color: #dc2626; }
+        
+        /* Preloader Styles */
+        #boot-sequence { position: fixed; inset: 0; background-color: #000; z-index: 9999; display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start; padding: 2rem; font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; color: #22c55e; overflow: hidden; transition: opacity 1s ease-out; }
+    </style>
+</head>
+<body class="antialiased selection:bg-red-600 selection:text-white">
+
+    <div id="boot-sequence">
+        <div id="boot-text-container" class="space-y-1 w-full max-w-3xl"></div>
+        <div id="boot-cursor" class="w-2 h-4 bg-green-500 animate-pulse mt-1"></div>
+    </div>
+
+    <nav class="fixed w-full z-50 bg-black/80 backdrop-blur-md border-b border-red-600/30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-2 cursor-pointer" onclick="window.scrollTo(0,0)">
+                    <i class="fa-solid fa-shield-halved text-red-600 text-2xl"></i>
+                    <span class="font-bold text-xl tracking-wider text-white">ROYAL<span class="text-red-600">SEC</span></span>
+                </div>
+                <div class="hidden md:flex space-x-8 text-sm font-semibold tracking-wide">
+                    <a href="#capabilities" class="text-gray-300 hover:text-white transition">CAPABILITIES</a>
+                    <a href="#bootcamp" class="text-gray-300 hover:text-white transition">BOOTCAMP</a>
+                    <a href="#pricing" class="text-gray-300 hover:text-white transition">PRICING</a>
+                    <a href="#team" class="text-gray-300 hover:text-white transition">COMMAND</a>
+                    <a href="#intel" class="text-gray-300 hover:text-white transition">THREAT INTEL</a>
+                </div>
+                <div class="hidden md:flex items-center">
+                    <button onclick="openLoginModal()" class="text-gray-400 hover:text-red-500 transition px-3 py-2 rounded-md" title="Operator Login">
+                        <i class="fa-solid fa-user-shield text-lg"></i>
+                    </button>
+                </div>
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="text-gray-300 hover:text-white focus:outline-none">
+                        <i class="fa-solid fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Dropdown Menu -->
+        <div id="mobile-menu" class="md:hidden hidden bg-black border-b border-red-600/30">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#capabilities" onclick="toggleMobileMenu()" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-900">CAPABILITIES</a>
+                <a href="#bootcamp" onclick="toggleMobileMenu()" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-900">BOOTCAMP</a>
+                <a href="#pricing" onclick="toggleMobileMenu()" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-900">PRICING</a>
+                <a href="#team" onclick="toggleMobileMenu()" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-900">COMMAND</a>
+                <a href="#intel" onclick="toggleMobileMenu()" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-900">THREAT INTEL</a>
+                <button onclick="toggleMobileMenu(); openLoginModal()" class="w-full text-left mt-4 px-3 py-2 text-red-500 font-bold border-t border-gray-800"><i class="fa-solid fa-user-shield mr-2"></i> OPERATOR LOGIN</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden bg-black">
+        <canvas id="network-canvas"></canvas>
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-red-900/20 via-black to-black z-0 pointer-events-none"></div>
+        
+        <div class="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-5xl content-layer reveal">
+            <!-- [ ROYAL{s0urc3_ ] - CTF PART 1 -->
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-red-600/30 bg-red-600/10 text-red-500 text-xs font-mono mb-6">
+                <span class="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span>
+                SYSTEMS NOMINAL // READY FOR ENGAGEMENT
+            </div>
+            <h1 class="text-5xl md:text-7xl font-bold tracking-tighter mb-6 text-white glitch-hover" data-text="OFFENSIVE CYBER DOMINANCE.">
+                OFFENSIVE CYBER DOMINANCE.
+            </h1>
+            <p class="text-lg md:text-xl text-gray-400 mb-10 max-w-2xl mx-auto font-mono">
+                We simulate real-world attacks to forge elite operators and fortify corporate infrastructure. 
+                <br><span class="text-red-500">This is not for script kiddies.</span>
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="#contact" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-md transition transform hover:scale-105 flex items-center justify-center gap-2 glitch-hover" data-text="INITIATE RED TEAM">
+                    <i class="fa-solid fa-crosshairs"></i> INITIATE RED TEAM
+                </a>
+                <a href="#bootcamp" class="bg-transparent border border-red-600 text-white hover:bg-red-600/20 font-bold py-3 px-8 rounded-md transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-laptop-code"></i> JOIN BOOTCAMP
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <section id="capabilities" class="py-24 bg-gray-900 border-t border-red-600/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4 glitch-hover" data-text="TACTICAL CAPABILITIES">TACTICAL CAPABILITIES</h2>
+                <div class="w-24 h-1 bg-red-600 mx-auto"></div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-black p-8 rounded-lg border border-gray-800 hover:border-red-600 transition group reveal relative overflow-hidden">
+                    <i class="fa-solid fa-user-ninja text-4xl text-red-600 mb-6 group-hover:scale-110 transition animate-float"></i>
+                    <h3 class="text-xl font-bold text-white mb-3">Red Teaming</h3>
+                    <p class="text-gray-400 text-sm">Full-scope, multi-layered attack simulations designed to measure how well your people, networks, and physical security withstand a real-world adversary.</p>
+                </div>
+                <div class="bg-black p-8 rounded-lg border border-gray-800 hover:border-red-600 transition group reveal relative overflow-hidden">
+                    <i class="fa-solid fa-bug text-4xl text-red-600 mb-6 group-hover:scale-110 transition animate-float-delayed"></i>
+                    <h3 class="text-xl font-bold text-white mb-3">Penetration Testing</h3>
+                    <p class="text-gray-400 text-sm">Deep-dive vulnerability assessments of web applications, internal networks, and cloud infrastructure using proprietary military-style methodology.</p>
+                </div>
+                <div class="bg-black p-8 rounded-lg border border-gray-800 hover:border-red-600 transition group reveal relative overflow-hidden">
+                    <i class="fa-solid fa-graduation-cap text-4xl text-red-600 mb-6 group-hover:scale-110 transition animate-float"></i>
+                    <h3 class="text-xl font-bold text-white mb-3">Elite Training</h3>
+                    <p class="text-gray-400 text-sm">10-Day intensive bootcamp transforming beginners into capable operators. From TCP/IP deep dives to Active Directory exploitation and C2 OPSEC.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="bootcamp" class="py-24 bg-black border-t border-red-600/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class="reveal">
+                    <h2 class="text-3xl md:text-4xl font-bold text-white mb-6 glitch-hover" data-text="MILITARY STYLE FOUNDATION">MILITARY STYLE FOUNDATION</h2>
+                    <div id="dynamic-bootcamp-text" class="text-gray-400 mb-6 whitespace-pre-line">
+                        Day 1 and 2 cover TCP/IP mastery and Linux Internals. By Day 3, we dive into the Enumeration Mindset.
+                        
+                        Stop blindly scanning. Start thinking. Our platform provides a virtualized cyber range directly in your browser. Practice Nmap, service enumeration, and file system navigation before touching a real target.
+                    </div>
+                    <ul class="space-y-3 text-sm font-mono text-gray-300 mb-8">
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-green-500"></i> Phase 1: Recon & Enumeration</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-green-500"></i> Phase 2: Initial Access & PrivEsc</li>
+                        <li class="flex items-center gap-2"><i class="fa-solid fa-check text-green-500"></i> Phase 3: Lateral Movement & C2</li>
+                    </ul>
+                    <button onclick="openLoginModal()" class="bg-transparent border border-red-600 text-red-500 hover:bg-red-600 hover:text-white font-bold py-2 px-6 rounded-md transition text-sm">
+                        ACCESS OPERATOR HUD
+                    </button>
+                </div>
+
+                <div class="bg-[#0c0c0c] rounded-lg border border-gray-700 shadow-2xl shadow-red-900/20 overflow-hidden reveal animate-float crt-overlay">
+                    <div class="bg-gray-800 px-4 py-2 flex items-center gap-2 border-b border-gray-700 relative z-10">
+                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        <span class="text-xs text-gray-400 font-mono ml-2">operator@royal-sec: ~</span>
+                    </div>
+                    <div class="p-4 font-mono text-sm h-80 overflow-y-auto relative z-10" id="terminal-container" onclick="document.getElementById('cmd-input').focus()">
+                        <div id="terminal-output" class="text-gray-300 mb-2">
+                            <span class="text-red-500 font-bold">Royal Security V-OS v2.4</span><br>
+                            Initializing virtual environment... [OK]<br>
+                            Type 'help' for available commands.
+                        </div>
+                        <div class="flex items-center text-green-500">
+                            <span id="prompt-path" class="mr-2 text-white">root@royal-sec:~#</span>
+                            <input type="text" id="cmd-input" class="bg-transparent border-none outline-none flex-grow text-green-500 placeholder-green-800" placeholder="Type command..." autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="pricing" class="py-24 bg-gray-900 border-t border-red-600/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4 glitch-hover" data-text="DEPLOYMENT TIERS">DEPLOYMENT TIERS</h2>
+                <div class="w-24 h-1 bg-red-600 mx-auto"></div>
+                <p class="text-gray-400 mt-4 max-w-2xl mx-auto">Select your operational readiness level. All tiers include access to the Virtual Cyber Range.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-black border border-gray-800 rounded-lg p-8 flex flex-col reveal">
+                    <h3 class="text-xl font-bold text-white mb-2 uppercase">Solo Operator</h3>
+                    <p class="text-gray-400 text-sm mb-6">Self-paced foundation.</p>
+                    <div class="text-4xl font-bold text-white mb-6">$499</div>
+                    <ul class="space-y-3 mb-8 flex-1 text-gray-300 text-sm">
+                        <li><i class="fa-solid fa-check text-red-500 mr-2"></i> 10-Day Video Syllabus</li>
+                        <li><i class="fa-solid fa-check text-red-500 mr-2"></i> PDF Target Checklists</li>
+                        <li><i class="fa-solid fa-check text-red-500 mr-2"></i> Cyber Range Access (30 Days)</li>
+                    </ul>
+                    <a href="#contact" class="w-full text-center bg-gray-800 hover:bg-red-600 text-white font-bold py-2 rounded transition">ENROLL NOW</a>
+                </div>
+                <div class="bg-[#110000] border border-red-600 rounded-lg p-8 flex flex-col reveal transform md:-translate-y-4 shadow-2xl shadow-red-900/30 relative">
+                    <div class="absolute top-0 right-0 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg">RECOMMENDED</div>
+                    <h3 class="text-xl font-bold text-red-500 mb-2 uppercase">Live Fire</h3>
+                    <p class="text-gray-400 text-sm mb-6">Instructor-led operational bootcamp.</p>
+                    <div class="text-4xl font-bold text-white mb-6">$1,299</div>
+                    <ul class="space-y-3 mb-8 flex-1 text-gray-300 text-sm">
+                        <li><i class="fa-solid fa-check text-red-500 mr-2"></i> Everything in Solo Operator</li>
+                        <li><i class="fa-solid fa-check text-red-500 mr-2"></i> Live Discord C2 Channel</li>
+                        <li><i class="fa-solid fa-check text-red-500 mr-2"></i> Daily Instructor Debriefs</li>
+                        <li><i class="fa-solid fa-check text-red-500 mr-2"></i> Final Report Review</li>
+                    </ul>
+                    <a href="#contact" class="w-full text-center bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded transition">ENROLL NOW</a>
+                </div>
+                <div class="bg-black border border-gray-800 rounded-lg p-8 flex flex-col reveal">
+                    <h3 class="text-xl font-bold text-white mb-2 uppercase">Corporate Squad</h3>
+                    <p class="text-gray-400 text-sm mb-6">Train your internal Blue Team.</p>
+                    <div class="text-4xl font-bold text-white mb-6">CUSTOM</div>
+                    <ul class="space-y-3 mb-8 flex-1 text-gray-300 text-sm">
+                        <li><i class="fa-solid fa-check text-red-500 mr-2"></i> 5+ Operator Licenses</li>
+                        <li><i class="fa-solid fa-check text-red-500 mr-2"></i> Custom Network Emulation</li>
+                        <li><i class="fa-solid fa-check text-red-500 mr-2"></i> Admin Progress Dashboard</li>
+                    </ul>
+                    <a href="#contact" class="w-full text-center bg-gray-800 hover:bg-red-600 text-white font-bold py-2 rounded transition">REQUEST QUOTE</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="team" class="py-24 bg-black border-t border-red-600/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4 glitch-hover" data-text="COMMAND HIERARCHY">COMMAND HIERARCHY</h2>
+                <div class="w-24 h-1 bg-red-600 mx-auto"></div>
+            </div>
+            <div id="dynamic-team-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="text-center text-gray-500 font-mono w-full col-span-full">Syncing Command Roster...</div>
+            </div>
+        </div>
+    </section>
+
+    <section id="intel" class="py-24 bg-gray-900 border-t border-red-600/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4 glitch-hover" data-text="THREAT INTEL & LOGS">THREAT INTEL & LOGS</h2>
+                <div class="w-24 h-1 bg-red-600 mx-auto"></div>
+            </div>
+            <div id="dynamic-intel-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                 <div class="text-center text-gray-500 font-mono w-full col-span-full">Decrypting Intel Logs...</div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="py-24 bg-black border-t border-red-600/20">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center reveal">
+            <h2 class="text-3xl md:text-4xl font-bold text-white mb-6 glitch-hover" data-text="SECURE COMMS">SECURE COMMS</h2>
+            <p class="text-gray-400 mb-8">Ready to deploy our operators or join the bootcamp?</p>
+            
+            <form id="contact-form" class="bg-gray-900 p-8 rounded-lg border border-gray-800 text-left max-w-2xl mx-auto shadow-xl">
+                <!-- Replace value with your actual Web3Forms Access Key later -->
+                <input type="hidden" name="access_key" value="dd39ae8b-7950-4096-ba9c-e19c4c603640">
+                <input type="hidden" name="subject" value="New Royal Security Deployment Request">
+                <input type="checkbox" name="botcheck" class="hidden" style="display: none;">
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-400 mb-1">Callsign / Name</label>
+                    <input type="text" name="name" id="form-name" required class="w-full bg-black border border-gray-700 rounded p-3 text-white focus:outline-none focus:border-red-600 transition">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-400 mb-1">Secure Email</label>
+                    <input type="email" name="email" id="form-email" required class="w-full bg-black border border-gray-700 rounded p-3 text-white focus:outline-none focus:border-red-600 transition">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-400 mb-1">Objective</label>
+                    <textarea name="message" id="form-message" required rows="4" class="w-full bg-black border border-gray-700 rounded p-3 text-white focus:outline-none focus:border-red-600 transition"></textarea>
+                </div>
+                <button type="submit" id="form-submit-btn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded transition flex items-center justify-center gap-2">
+                    <span>TRANSMIT</span>
+                </button>
+                <p id="form-status" class="text-sm font-mono text-center mt-4 hidden"></p>
+            </form>
+        </div>
+    </section>
+
+    <footer class="bg-black py-8 border-t border-gray-800 text-center">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-center gap-6 mb-4">
+                <a href="mailto:royalsecurity.official@gmail.com" class="text-gray-500 hover:text-white transition"><i class="fa-solid fa-envelope text-xl"></i></a>
+                <a href="#" id="dynamic-whatsapp-link" target="_blank" rel="noopener noreferrer" class="text-gray-500 hover:text-white transition"><i class="fa-brands fa-whatsapp text-xl"></i></a>
+            </div>
+            <p class="text-gray-600 text-sm font-mono">ROYAL SECURITY &copy; 2026.<br>royalsecurity.official@gmail.com</p>
+        </div>
+    </footer>
+
+    <div id="modal-overlay" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4">
+        <canvas id="matrix-canvas" class="hidden"></canvas>
+        
+        <!-- Login Modal -->
+        <div id="login-modal" class="bg-gray-900 border border-red-600/50 p-8 rounded-lg max-w-sm w-full hidden relative z-10 shadow-2xl shadow-red-900/20 crt-overlay">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-white font-bold text-xl font-mono"><i class="fa-solid fa-lock text-red-500 mr-2"></i> SYSTEM LOGIN</h3>
+                <button onclick="closeModals()" class="text-gray-500 hover:text-white"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <input type="text" id="auth-user" class="w-full bg-black border border-gray-700 rounded p-3 text-green-500 font-mono focus:outline-none focus:border-red-600 transition mb-4 text-center" placeholder="Callsign (or Admin Email)">
+            <input type="password" id="auth-pass" class="w-full bg-black border border-gray-700 rounded p-3 text-green-500 font-mono focus:outline-none focus:border-red-600 transition mb-4 text-center" placeholder="Password">
+            <button onclick="attemptLogin()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition">AUTHENTICATE</button>
+            <p id="auth-error" class="text-red-500 text-xs mt-3 hidden text-center">ACCESS DENIED</p>
+        </div>
+
+        <!-- FULL CMS ADMIN DASHBOARD -->
+        <div id="admin-modal" class="bg-gray-900 border border-gray-700 p-0 rounded-lg max-w-6xl w-full hidden relative z-10 h-[85vh] flex flex-col overflow-hidden">
+            <div class="flex justify-between items-center p-4 border-b border-gray-800 bg-black">
+                <h3 class="text-white font-bold text-xl"><i class="fa-solid fa-server text-red-500 mr-2"></i> ADMIN COMMAND CENTER</h3>
+                <div class="flex items-center gap-5">
+                    <button onclick="signOutAdmin()" class="text-xs font-bold text-gray-400 hover:text-red-500 transition" title="End this admin session"><i class="fa-solid fa-right-from-bracket mr-1"></i> SIGN OUT</button>
+                    <button onclick="closeModals()" class="text-gray-500 hover:text-white"><i class="fa-solid fa-times text-xl"></i></button>
+                </div>
+            </div>
+            
+            <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
+                <div class="w-full md:w-48 bg-black border-b md:border-b-0 md:border-r border-gray-800 p-4 flex md:flex-col gap-2 overflow-x-auto shrink-0">
+                    <button onclick="switchAdminTab('tab-users')" id="btn-tab-users" class="tab-btn active whitespace-nowrap md:w-full text-left px-4 py-2 rounded text-sm font-bold text-gray-400 hover:bg-gray-800 transition"><i class="fa-solid fa-users w-6"></i> Operators</button>
+                    <button onclick="switchAdminTab('tab-team')" id="btn-tab-team" class="tab-btn whitespace-nowrap md:w-full text-left px-4 py-2 rounded text-sm font-bold text-gray-400 hover:bg-gray-800 transition"><i class="fa-solid fa-sitemap w-6"></i> Hierarchy</button>
+                    <button onclick="switchAdminTab('tab-intel')" id="btn-tab-intel" class="tab-btn whitespace-nowrap md:w-full text-left px-4 py-2 rounded text-sm font-bold text-gray-400 hover:bg-gray-800 transition"><i class="fa-solid fa-file-shield w-6"></i> Intel Blogs</button>
+                    <button onclick="switchAdminTab('tab-config')" id="btn-tab-config" class="tab-btn whitespace-nowrap md:w-full text-left px-4 py-2 rounded text-sm font-bold text-gray-400 hover:bg-gray-800 transition"><i class="fa-solid fa-gear w-6"></i> Config & Text</button>
+                </div>
+                
+                <div class="flex-1 p-6 overflow-y-auto bg-gray-900 relative">
+                    
+                    <div id="tab-users" class="admin-tab active">
+                        <h4 class="text-white font-bold mb-4 border-b border-gray-800 pb-2">Access Control (Secure Hash Protocol)</h4>
+                        <div class="flex flex-col sm:flex-row gap-2 mb-2 bg-black p-4 rounded border border-gray-800">
+                            <input type="text" id="new-user-callsign" placeholder="Callsign" class="bg-gray-900 border border-gray-700 rounded p-2 text-white text-sm flex-1">
+                            <input type="text" id="new-user-pass" placeholder="Password (Will be encrypted)" class="bg-gray-900 border border-gray-700 rounded p-2 text-white text-sm flex-1">
+                            <button onclick="addUser()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-bold transition">Add User</button>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-6">Accounts added here are Operator (student HUD) logins only. Admin access is granted in Firebase Console &rarr; Authentication, then signing in above with that email.</p>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm text-gray-400 min-w-full">
+                                <thead class="bg-black text-gray-300"><tr><th class="p-2 rounded-tl">Callsign</th><th class="p-2">Password Hash</th><th class="p-2">Role</th><th class="p-2 rounded-tr text-right">Action</th></tr></thead>
+                                <tbody id="user-table-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="tab-team" class="admin-tab">
+                        <h4 class="text-white font-bold mb-4 border-b border-gray-800 pb-2">Command Roster Management</h4>
+                        <div class="bg-black p-4 rounded border border-gray-800 mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <input type="text" id="new-team-name" placeholder="Name (e.g. Raja Zulqarnain)" class="bg-gray-900 border border-gray-700 rounded p-2 text-white text-sm">
+                            <input type="text" id="new-team-role" placeholder="Subtitle (e.g. CEO / Lead)" class="bg-gray-900 border border-gray-700 rounded p-2 text-white text-sm">
+                            <input type="text" id="new-team-initials" placeholder="Initials (e.g. RZ)" class="bg-gray-900 border border-gray-700 rounded p-2 text-white text-sm">
+                            <input type="text" id="new-team-desc" placeholder="Short description..." class="bg-gray-900 border border-gray-700 rounded p-2 text-white text-sm">
+                            <button onclick="addTeamMember()" class="sm:col-span-2 bg-red-600 hover:bg-red-700 text-white py-2 rounded font-bold transition">Deploy Team Member</button>
+                        </div>
+                        <div id="admin-team-list" class="space-y-2"></div>
+                    </div>
+
+                    <div id="tab-intel" class="admin-tab">
+                        <h4 class="text-white font-bold mb-4 border-b border-gray-800 pb-2">Publish Intel / Blog</h4>
+                        <div class="bg-black p-4 rounded border border-gray-800 mb-6 flex flex-col gap-4">
+                            <div class="flex flex-col sm:flex-row gap-4">
+                                <input type="text" id="new-intel-type" placeholder="Type (e.g. CTF WRITEUP)" class="bg-gray-900 border border-gray-700 rounded p-2 text-white text-sm sm:w-1/3">
+                                <input type="text" id="new-intel-title" placeholder="Blog Title" class="bg-gray-900 border border-gray-700 rounded p-2 text-white text-sm flex-1">
+                            </div>
+                            <input type="text" id="new-intel-short" placeholder="Short description for card..." class="bg-gray-900 border border-gray-700 rounded p-2 text-white text-sm">
+                            <textarea id="new-intel-full" rows="4" placeholder="Full blog content (plain text, line breaks preserved)..." class="bg-gray-900 border border-gray-700 rounded p-2 text-white text-sm font-mono"></textarea>
+                            <button onclick="addIntelBlog()" class="bg-red-600 hover:bg-red-700 text-white py-2 rounded font-bold transition">Publish Log</button>
+                        </div>
+                        <div id="admin-intel-list" class="space-y-2"></div>
+                    </div>
+
+                    <div id="tab-config" class="admin-tab">
+                        <h4 class="text-white font-bold mb-4 border-b border-gray-800 pb-2">Global Settings</h4>
+                        <div class="bg-black p-4 rounded border border-gray-800 mb-6">
+                            <label class="block text-xs text-gray-400 mb-1">WhatsApp Channel Link</label>
+                            <input type="text" id="config-whatsapp" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white text-sm mb-4">
+                            
+                            <label class="block text-xs text-gray-400 mb-1">Bootcamp Description Text</label>
+                            <textarea id="config-bootcamp" rows="5" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white text-sm mb-4 font-mono"></textarea>
+                            
+                            <button onclick="saveConfig()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded transition">Save Global Config</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Operator HUD -->
+        <div id="student-modal" class="bg-black border border-gray-700 p-6 rounded-lg max-w-5xl w-full hidden relative z-10 h-[85vh] overflow-y-auto crt-overlay">
+            <div class="flex justify-between items-center mb-6 border-b border-gray-800 pb-4">
+                <h3 class="text-white font-bold text-2xl font-mono"><i class="fa-solid fa-crosshairs text-red-500 mr-2"></i> OPERATOR HUD [LIVE]</h3>
+                <button onclick="closeModals()" class="text-gray-500 hover:text-white"><i class="fa-solid fa-times text-xl"></i></button>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+                <div class="bg-gray-900 p-4 rounded border border-gray-800">
+                    <h4 class="text-white font-bold mb-4 font-mono">10-DAY OBJECTIVES</h4>
+                    <ul class="space-y-4 text-sm">
+                        <li class="flex items-center text-gray-500 line-through"><i class="fa-solid fa-check-circle mr-2 text-green-500"></i> Day 1: Network Mastery</li>
+                        <li class="flex items-center text-gray-500 line-through"><i class="fa-solid fa-check-circle mr-2 text-green-500"></i> Day 2: Linux Internals</li>
+                        <li class="flex items-center text-white bg-gray-800 p-2 rounded border border-red-600/50"><i class="fa-solid fa-spinner fa-spin mr-2 text-red-500"></i> Day 3: Enumeration & Nmap</li>
+                        <li class="flex items-center text-gray-400"><i class="fa-regular fa-circle mr-2"></i> Day 4: Web Exploitation</li>
+                    </ul>
+                </div>
+                <div class="lg:col-span-2 bg-[#0c0c0c] border border-gray-700 rounded shadow-xl flex flex-col">
+                    <div class="bg-gray-800 px-4 py-2 flex justify-between items-center border-b border-gray-700">
+                        <span class="text-xs text-gray-400 font-mono">Virtual File System Active</span>
+                    </div>
+                    <div class="p-4 font-mono text-sm flex-grow overflow-y-auto" id="hud-terminal-container" onclick="document.getElementById('hud-cmd-input').focus()">
+                        <div id="hud-terminal-output" class="text-gray-300 mb-2">
+                            <span class="text-red-500 font-bold">Royal Security V-OS v2.4</span><br>
+                            Type 'help' for available commands.
+                        </div>
+                        <div class="flex items-center text-green-500">
+                            <span id="hud-prompt-path" class="mr-2 text-white">root@royal-sec:~#</span>
+                            <input type="text" id="hud-cmd-input" class="bg-transparent border-none outline-none flex-grow text-green-500 placeholder-green-800" placeholder="Type command..." autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="dynamic-modals-container"></div>
+        
+        <!-- Secret CTF Dossier -->
+        <div id="modal-secret" class="dossier-modal bg-green-900/20 border border-green-500 p-8 rounded max-w-3xl w-full hidden relative z-10 crt-overlay">
+            <button onclick="closeModals()" class="absolute top-4 right-4 text-gray-500 hover:text-white"><i class="fa-solid fa-times text-xl"></i></button>
+            <div class="text-green-500 font-mono mb-4 animate-pulse">CLASSIFIED DOSSIER // DECRYPTED</div>
+            <h2 class="text-2xl font-bold text-white mb-4 text-center">WELCOME TO THE INNER CIRCLE</h2>
+            <div class="text-gray-300 space-y-4 text-sm font-mono text-center">
+                <p>You have successfully located the fragments and submitted the flag.</p>
+                <p class="text-lg font-bold text-white mt-8">Mention code "NINJA50" for a 50% discount on the Live Fire Bootcamp.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-4 right-4 bg-gray-900 border border-red-600 text-white px-4 py-2 rounded shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-[70] font-mono text-sm"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+        // ================== BOOT SEQUENCE (OP 1) ==================
+        document.addEventListener("DOMContentLoaded", async () => {
+            const bootContainer = document.getElementById('boot-text-container');
+            const preloader = document.getElementById('boot-sequence');
+            const sequence = [
+                "Initiating Royal OS kernel...",
+                "Loading tactical modules................ [OK]",
+                "Decrypting operator assets.............. [OK]",
+                "Establishing secure C2 connection....... [OK]",
+                "Bypassing perimeter defenses............ [OK]",
+                "SYSTEM READY."
+            ];
+            
+            for (let line of sequence) {
+                const el = document.createElement('div');
+                el.innerText = "> " + line;
+                bootContainer.appendChild(el);
+                // Random short delay between lines
+                await new Promise(r => setTimeout(r, Math.random() * 300 + 100));
+            }
+            await new Promise(r => setTimeout(r, 800));
+            preloader.style.opacity = '0';
+            setTimeout(() => preloader.remove(), 1000);
+        });
+
+        // ================== AUDIO SYSTEM ==================
+        let synth, noise;
+        let audioReady = false;
+        async function initAudio() {
+            if (audioReady) return;
+            try {
+                await Tone.start();
+                synth = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "sine" }, envelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 0.1 } }).toDestination();
+                synth.volume.value = -15;
+                noise = new Tone.NoiseSynth({ noise: { type: "pink" }, envelope: { attack: 0.005, decay: 0.05, sustain: 0, release: 0.05 } }).toDestination();
+                noise.volume.value = -25;
+                audioReady = true;
+            } catch (e) { console.warn("Audio setup deferred."); }
+        }
+        function playKeystroke() { if(audioReady && noise) { try{ noise.triggerAttackRelease("16n"); }catch(e){} } }
+        function playAccessGranted() { if(audioReady && synth) { try{ synth.triggerAttackRelease(["C5", "E5", "G5"], "8n"); }catch(e){} } }
+        function playAccessDenied() { if(audioReady && synth) { try{ synth.triggerAttackRelease(["C3", "C3"], "8n"); }catch(e){} } }
+        function playLowDrone() { if(audioReady && synth) { try{ synth.triggerAttackRelease(["C2", "G2"], "2n"); }catch(e){} } }
+        document.body.addEventListener('click', initAudio, { once: true });
+        document.body.addEventListener('keydown', initAudio, { once: true });
+
+        // ================== CORE UTILS & CRYPTO (OP 2) ==================
+        const getEl = (id) => document.getElementById(id);
+        window.escapeHTML = (str) => { if(!str) return ''; return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)); };
+        window.showToast = (msg) => {
+            const toast = getEl('toast');
+            if(!toast) return;
+            toast.innerText = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
+        };
+
+        // SHA-256 Hashing for Passwords
+        async function hashPassword(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // ================== FIREBASE SECURE INIT ==================
+        const firebaseConfig = {
+            apiKey: "AIzaSyCb5bsj0k5UcxfCnAEcGcze7FznIwCFObo",
+            authDomain: "royal-security-18905.firebaseapp.com",
+            projectId: "royal-security-18905",
+            storageBucket: "royal-security-18905.firebasestorage.app",
+            messagingSenderId: "633243766340",
+            appId: "1:633243766340:web:0714a80fe1e80447aa3611"
+        };
+
+        let db, auth;
+        let isDatabaseLive = false;
+        const appId = "royal-sec-db";
+
+        let allUsers = [];
+        let allTeam = [];
+        let allIntel = [];
+        let loggedInUser = null;
+
+        try {
+            if (firebaseConfig.apiKey && !firebaseConfig.apiKey.includes("YourRealApiKeyHere")) {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                isDatabaseLive = true;
+            }
+        } catch (e) { console.warn("Firebase Init Failed. Operating in Mock Mode."); }
+
+        async function fetchAllCMSData() {
+            if(!isDatabaseLive) { window.injectMockData(); return; }
+
+            // Each section fetches and fails independently now. Before, one shared
+            // try/catch meant a permission error on ANY single read (e.g. rules not
+            // covering 'public/config') threw immediately and fell back to mock data
+            // for everything - including Team/Intel collections that might otherwise
+            // have loaded fine.
+            try {
+                const confSnap = await getDoc(doc(db, 'artifacts', appId, 'public', 'config'));
+                if(confSnap.exists()) {
+                    const data = confSnap.data();
+                    getEl('config-whatsapp').value = data.whatsapp || "";
+                    getEl('dynamic-whatsapp-link').href = data.whatsapp || "#";
+                    if(data.bootcamp) {
+                        getEl('dynamic-bootcamp-text').innerText = data.bootcamp;
+                        getEl('config-bootcamp').value = data.bootcamp;
+                    }
+                }
+            } catch (e) {
+                console.error("Config fetch failed - check Firestore Rules for artifacts/*/public/config.", e);
+            }
+
+            try {
+                const teamSnap = await getDocs(collection(db, 'artifacts', appId, 'team'));
+                allTeam = teamSnap.docs.map(d => ({id: d.id, ...d.data()}));
+                if(allTeam.length === 0) window.injectMockTeam(); else renderTeamToUI();
+            } catch (e) {
+                console.error("Team fetch failed - check Firestore Rules for artifacts/*/team.", e);
+                window.injectMockTeam();
+            }
+
+            try {
+                const intelSnap = await getDocs(collection(db, 'artifacts', appId, 'intel'));
+                allIntel = intelSnap.docs.map(d => ({id: d.id, ...d.data()}));
+                if(allIntel.length === 0) window.injectMockIntel(); else renderIntelToUI();
+            } catch (e) {
+                console.error("Intel fetch failed - check Firestore Rules for artifacts/*/intel.", e);
+                window.injectMockIntel();
+            }
+        }
+
+        // Operator/Admin account list contains password hashes, so it is only
+        // ever fetched for an already-authenticated Admin session - never on
+        // page load for ordinary visitors.
+        async function loadOperatorAccounts() {
+            if(!isDatabaseLive || !loggedInUser || loggedInUser.role !== 'Admin') return;
+            try {
+                const userSnap = await getDocs(collection(db, 'artifacts', appId, 'users'));
+                allUsers = userSnap.docs.map(d => ({id: d.id, ...d.data()}));
+                renderUsersAdminTable();
+            } catch (e) {
+                console.error("Operator list fetch failed.", e);
+            }
+        }
+
+        function renderTeamToUI() {
+            const grid = getEl('dynamic-team-grid');
+            const adminList = getEl('admin-team-list');
+            if(grid) grid.innerHTML = ''; if(adminList) adminList.innerHTML = '';
+            allTeam.forEach(t => {
+                if(grid) grid.innerHTML += `<div class="bg-gray-900 border border-gray-800 p-6 rounded-lg text-center reveal hover:border-red-600 transition"><div class="w-24 h-24 mx-auto bg-gray-800 rounded-full flex items-center justify-center mb-4 border-2 border-red-600 overflow-hidden text-2xl font-bold text-gray-500">${escapeHTML(t.initials)}</div><h3 class="text-lg font-bold text-white">${escapeHTML(t.name)}</h3><p class="text-red-500 text-sm font-mono mb-2">${escapeHTML(t.role)}</p><p class="text-gray-400 text-xs">${escapeHTML(t.desc)}</p></div>`;
+                if(adminList) adminList.innerHTML += `<div class="bg-black p-3 rounded border border-gray-800 flex justify-between items-center text-sm"><div><span class="font-bold text-white">${escapeHTML(t.name)}</span> <span class="text-gray-500">(${escapeHTML(t.role)})</span></div><button onclick="deleteTeam('${t.id}')" class="text-red-500"><i class="fa-solid fa-trash"></i></button></div>`;
+            });
+            checkReveal();
+        }
+
+        function renderIntelToUI() {
+            const grid = getEl('dynamic-intel-grid');
+            const modalContainer = getEl('dynamic-modals-container');
+            const adminList = getEl('admin-intel-list');
+            if(grid) grid.innerHTML = ''; if(modalContainer) modalContainer.innerHTML = ''; if(adminList) adminList.innerHTML = '';
+            
+            allIntel.forEach((intel, idx) => {
+                const modalId = `modal-intel-${idx}`;
+                if(grid) grid.innerHTML += `<div class="bg-black border border-gray-800 p-6 rounded-lg reveal"><div class="text-xs font-mono text-red-500 mb-2">${escapeHTML(intel.type)}</div><h3 class="text-lg font-bold text-white mb-2">${escapeHTML(intel.title)}</h3><p class="text-gray-400 text-sm mb-4">${escapeHTML(intel.short)}</p><button onclick="openModal('${modalId}')" class="text-sm font-bold text-white hover:text-red-500 transition"><i class="fa-solid fa-folder-open mr-1"></i> Read Report</button></div>`;
+                if(modalContainer) modalContainer.innerHTML += `<div id="${modalId}" class="dossier-modal bg-[#111] border border-gray-700 p-8 rounded max-w-3xl w-full hidden relative z-10 max-h-[80vh] overflow-y-auto crt-overlay"><button onclick="closeModals()" class="absolute top-4 right-4 text-gray-500 hover:text-white"><i class="fa-solid fa-times text-xl"></i></button><div class="text-red-500 font-mono mb-4">CLASSIFIED DOSSIER // ${escapeHTML(intel.type)}</div><h2 class="text-2xl font-bold text-white mb-4">${escapeHTML(intel.title)}</h2><div class="text-gray-300 space-y-4 text-sm font-mono whitespace-pre-line">${escapeHTML(intel.full)}</div></div>`;
+                if(adminList) adminList.innerHTML += `<div class="bg-black p-3 rounded border border-gray-800 flex justify-between items-center text-sm"><div><span class="font-bold text-white">${escapeHTML(intel.title)}</span></div><button onclick="deleteIntel('${intel.id}')" class="text-red-500"><i class="fa-solid fa-trash"></i></button></div>`;
+            });
+            checkReveal();
+        }
+
+        function renderUsersAdminTable() {
+            const tbody = getEl('user-table-body');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            allUsers.forEach(u => {
+                // Showing truncated hash for security
+                const displayHash = u.password.length > 20 ? u.password.substring(0,10) + '...' : u.password;
+                tbody.innerHTML += `<tr class="border-t border-gray-800"><td class="p-2">${escapeHTML(u.callsign)}</td><td class="p-2 text-gray-500 font-mono text-xs" title="${escapeHTML(u.password)}">[ENC] ${escapeHTML(displayHash)}</td><td class="p-2">${escapeHTML(u.role)}</td><td class="p-2 text-right"><button onclick="deleteUser('${u.id}')" class="text-red-500 hover:text-white"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+            });
+        }
+
+        window.saveConfig = async () => {
+            if (!loggedInUser || loggedInUser.role !== 'Admin') return showToast("SECURITY EXCEPTION: UNAUTHORIZED");
+            const wa = getEl('config-whatsapp').value;
+            const bc = getEl('config-bootcamp').value;
+            if (isDatabaseLive) {
+                try { await setDoc(doc(db, 'artifacts', appId, 'public', 'config'), { whatsapp: wa, bootcamp: bc }); showToast("Global Settings Updated"); fetchAllCMSData(); } 
+                catch (e) { showToast("DB ERROR: Write Access Denied by Rules."); }
+            }
+        };
+
+        window.addUser = async () => {
+            if (!loggedInUser || loggedInUser.role !== 'Admin') return showToast("SECURITY EXCEPTION: UNAUTHORIZED");
+            const c = getEl('new-user-callsign').value.trim();
+            const p = getEl('new-user-pass').value.trim();
+            const r = 'Operator'; // Real Admin accounts are provisioned via Firebase Auth, not here - see note above.
+            if(!c || !p) return showToast("Requires Callsign and Password");
+            
+            // Hash password before saving to DB
+            const hashedPassword = await hashPassword(p);
+
+            if(isDatabaseLive) {
+                try {
+                    await setDoc(doc(collection(db, 'artifacts', appId, 'users')), { callsign: c, password: hashedPassword, role: r });
+                    getEl('new-user-callsign').value = ''; getEl('new-user-pass').value = '';
+                    loadOperatorAccounts(); showToast("Operator Provisioned Securely");
+                } catch (e) { showToast("DB ERROR: Write Access Denied by Rules."); }
+            }
+        };
+        
+        window.deleteUser = async (id) => { 
+            if (!loggedInUser || loggedInUser.role !== 'Admin') return showToast("SECURITY EXCEPTION: UNAUTHORIZED");
+            if(isDatabaseLive){ try { await deleteDoc(doc(db, 'artifacts', appId, 'users', id)); loadOperatorAccounts(); showToast("User Purged"); } catch(e){ showToast("DB ERROR: Write Denied."); } } 
+        };
+
+        window.addTeamMember = async () => {
+            if (!loggedInUser || loggedInUser.role !== 'Admin') return showToast("SECURITY EXCEPTION: UNAUTHORIZED");
+            const data = { name: getEl('new-team-name').value.trim(), role: getEl('new-team-role').value.trim(), initials: getEl('new-team-initials').value.trim(), desc: getEl('new-team-desc').value.trim() };
+            if(!data.name) return;
+            if(isDatabaseLive) {
+                try { await setDoc(doc(collection(db, 'artifacts', appId, 'team')), data); getEl('new-team-name').value=''; getEl('new-team-role').value=''; getEl('new-team-initials').value=''; getEl('new-team-desc').value=''; fetchAllCMSData(); showToast("Team Updated"); } 
+                catch(e) { showToast("DB ERROR: Write Denied."); }
+            }
+        };
+        window.deleteTeam = async (id) => { 
+            if (!loggedInUser || loggedInUser.role !== 'Admin') return showToast("SECURITY EXCEPTION: UNAUTHORIZED");
+            if(isDatabaseLive){ try { await deleteDoc(doc(db, 'artifacts', appId, 'team', id)); fetchAllCMSData(); } catch(e){ showToast("DB ERROR: Write Denied."); } } 
+        };
+
+        window.addIntelBlog = async () => {
+            if (!loggedInUser || loggedInUser.role !== 'Admin') return showToast("SECURITY EXCEPTION: UNAUTHORIZED");
+            const data = { type: getEl('new-intel-type').value.trim(), title: getEl('new-intel-title').value.trim(), short: getEl('new-intel-short').value.trim(), full: getEl('new-intel-full').value.trim() };
+            if(!data.title) return;
+            if(isDatabaseLive) {
+                try { await setDoc(doc(collection(db, 'artifacts', appId, 'intel')), data); getEl('new-intel-title').value=''; getEl('new-intel-short').value=''; getEl('new-intel-full').value=''; fetchAllCMSData(); showToast("Intel Log Published"); } 
+                catch(e) { showToast("DB ERROR: Write Denied."); }
+            }
+        };
+        window.deleteIntel = async (id) => { 
+            if (!loggedInUser || loggedInUser.role !== 'Admin') return showToast("SECURITY EXCEPTION: UNAUTHORIZED");
+            if(isDatabaseLive){ try { await deleteDoc(doc(db, 'artifacts', appId, 'intel', id)); fetchAllCMSData(); } catch(e){ showToast("DB ERROR: Write Denied."); } } 
+        };
+
+        window.attemptLogin = async () => {
+            initAudio();
+            // Admins sign in with the email address of the account created in
+            // Firebase Console -> Authentication (see setup notes). Operators
+            // (bootcamp students) sign in with their Callsign as before.
+            const identifier = getEl('auth-user').value.trim();
+            const pass = getEl('auth-pass').value.trim();
+            const errEl = getEl('auth-error');
+            errEl.classList.add('hidden');
+
+            if(!isDatabaseLive) {
+                playAccessDenied(); errEl.innerText = "DB OFFLINE (Mock Mode Only)"; errEl.classList.remove('hidden');
+                return;
+            }
+
+            // 1) Try real Admin auth first - verified server-side by Firebase,
+            //    not by anything running in this browser tab.
+            if (identifier.includes('@')) {
+                try {
+                    const cred = await signInWithEmailAndPassword(auth, identifier, pass);
+                    loggedInUser = { callsign: cred.user.email, role: 'Admin' };
+                    playAccessGranted(); closeModals();
+                    getEl('admin-modal').classList.remove('hidden'); getEl('modal-overlay').classList.remove('hidden');
+                    getEl('auth-pass').value = '';
+                    loadOperatorAccounts();
+                    return;
+                } catch (e) {
+                    // Not a valid admin login - fall through to the Operator check
+                    // below (in case a student's callsign happens to contain "@").
+                }
+            }
+
+            // 2) Operator (student) lookup - unchanged mechanism, view-only access.
+            const callsign = identifier;
+            try {
+                const hashedPassword = await hashPassword(pass);
+                const q = query(collection(db, 'artifacts', appId, 'users'), where('callsign', '==', callsign), where('password', '==', hashedPassword));
+                const snap = await getDocs(q);
+                
+                if(!snap.empty) {
+                    const user = snap.docs[0].data();
+                    loggedInUser = { ...user, role: 'Operator' }; // Admin can only come from Firebase Auth above.
+                    playAccessGranted(); closeModals();
+                    getEl('student-modal').classList.remove('hidden'); getEl('modal-overlay').classList.remove('hidden');
+                    getEl('auth-pass').value = '';
+                } else { throw new Error("Denied"); }
+            } catch(e) { 
+                playAccessDenied(); 
+                errEl.innerText = "ACCESS DENIED"; 
+                errEl.classList.remove('hidden'); 
+            }
+        };
+
+        window.signOutAdmin = async () => {
+            try { await signOut(auth); } catch(e) { /* no-op */ }
+            loggedInUser = null;
+            closeModals();
+            showToast("SESSION TERMINATED");
+        };
+
+        window.switchAdminTab = (tabId) => {
+            document.querySelectorAll('.admin-tab').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            if(getEl(tabId)) getEl(tabId).classList.add('active');
+            if(getEl(`btn-${tabId}`)) getEl(`btn-${tabId}`).classList.add('active');
+        };
+
+        let isTyping = false, currentDir = "~";
+        let vfs = {
+            "~": { type: "dir", items: ["tools", "reports", "readme.txt"] },
+            "~/tools": { type: "dir", items: ["nmap", "mimikatz.exe"] },
+            "~/reports": { type: "dir", items: [] },
+            "~/readme.txt": { type: "file", content: "SYSTEM MSG: You are close. Type: submit_flag ROYAL{s0urc3_c0d3_n1nj4}" },
+            "~/tools/nmap": { type: "file", content: "ELF executable. Cannot run in browser." },
+            "~/tools/mimikatz.exe": { type: "file", content: "MZ\x90\x00... Magic bytes detected." }
+        };
+
+        function getAbsPath(p) {
+            if(!p || p==='~') return '~';
+            if(p==='..') { let arr=currentDir.split('/'); arr.pop(); return arr.join('/')||'~'; }
+            if(p==='.') return currentDir;
+            return p.startsWith('~/') ? p : (currentDir==='~'?`~/${p}`:`${currentDir}/${p}`);
+        }
+
+        async function typeWriter(text, el) {
+            isTyping = true; let currentHTML = el.innerHTML;
+            for (let i=0; i<text.length; i++) {
+                if (text.substr(i,4) === '<br>') { currentHTML += '<br>'; i+=3; }
+                else if (text[i] === '<') { let tag=''; while(text[i]!=='>'&&i<text.length){tag+=text[i]; i++;} tag+='>'; currentHTML+=tag; }
+                else { currentHTML += text[i]; if(i%2===0) playKeystroke(); }
+                el.innerHTML = currentHTML; 
+                if(el.parentElement) el.parentElement.scrollTop = el.parentElement.scrollHeight;
+                await new Promise(r => setTimeout(r, 10));
+            }
+            isTyping = false;
+        }
+
+        async function handleCommand(inputEl, outId) {
+            if(isTyping) return;
+            const val = escapeHTML(inputEl.value.trim()); inputEl.value = '';
+            const out = getEl(outId); if(!out) return;
+            out.innerHTML += `<div><span class="text-white">root@royal-sec:${currentDir}#</span> ${val}</div>`;
+            out.parentElement.scrollTop = out.parentElement.scrollHeight;
+            if(!val) return;
+            initAudio();
+
+            const args = val.split(' ').filter(Boolean); const cmd = args[0].toLowerCase(); const arg1 = args[1];
+            const div = document.createElement('div'); out.appendChild(div);
+
+            if(cmd==='ls') {
+                if(vfs[currentDir]){ 
+                    let str = vfs[currentDir].items.map(i => {
+                        let path = getAbsPath(i);
+                        return (vfs[path] && vfs[path].type==='dir') ? `<span class="text-blue-400 font-bold">${i}/</span>` : `<span class="text-green-500">${i}</span>`;
+                    }).join('  ');
+                    await typeWriter(str || "Directory is empty.", div); 
+                }
+            } else if(cmd==='cd') {
+                const target = getAbsPath(arg1);
+                if(!arg1 || arg1==='~') currentDir='~'; else if(arg1==='..') currentDir=target;
+                else if(vfs[currentDir] && vfs[currentDir].items.includes(arg1) && vfs[target] && vfs[target].type==='dir') currentDir=target;
+                else await typeWriter(`cd: ${arg1}: No such file or directory`, div);
+                document.querySelectorAll('#prompt-path, #hud-prompt-path').forEach(p => p.innerText=`root@royal-sec:${currentDir}#`);
+            } else if(cmd==='mkdir') {
+                if(!arg1) await typeWriter(`mkdir: missing operand`, div);
+                else {
+                    const target = getAbsPath(arg1);
+                    if(!vfs[target]) { vfs[target] = { type: 'dir', items: [] }; vfs[currentDir].items.push(arg1); await typeWriter("", div); }
+                    else await typeWriter(`mkdir: cannot create directory '${arg1}': File exists`, div);
+                }
+            } else if(cmd==='touch') {
+                if(!arg1) await typeWriter(`touch: missing file operand`, div);
+                else {
+                    const target = getAbsPath(arg1);
+                    if(!vfs[target]) { vfs[target] = { type: 'file', content: "" }; vfs[currentDir].items.push(arg1); await typeWriter("", div); }
+                }
+            } else if(cmd==='cat') {
+                if(!arg1) await typeWriter(`cat: missing file operand`, div);
+                else {
+                    const target = getAbsPath(arg1);
+                    if(vfs[currentDir] && vfs[currentDir].items.includes(arg1) && vfs[target] && vfs[target].type==='file') await typeWriter(vfs[target].content, div);
+                    else await typeWriter(`cat: ${arg1}: No such file`, div);
+                }
+            } else if(cmd==='clear') { out.innerHTML = ''; }
+            else if(cmd==='submit_flag' && val.includes('ROYAL{s0urc3_c0d3_n1nj4}')) {
+                await typeWriter("<span class='text-green-500'>[+] FLAG ACCEPTED.</span>", div); setTimeout(()=>{ showToast("CTF Solved"); openModal('modal-secret'); }, 1000);
+            } else if(cmd==='help') {
+                await typeWriter("Commands: ls, cd, mkdir, touch, cat, clear, submit_flag", div);
+            } else { await typeWriter(`bash: ${cmd}: command not found. Try 'help'.`, div); }
+        }
+
+        const mTerm = getEl('cmd-input'); if(mTerm) mTerm.addEventListener('keypress', e => { if(e.key==='Enter') handleCommand(mTerm, 'terminal-output'); });
+        const hTerm = getEl('hud-cmd-input'); if(hTerm) hTerm.addEventListener('keypress', e => { if(e.key==='Enter') handleCommand(hTerm, 'hud-terminal-output'); });
+
+        const form = getEl('contact-form');
+        if(form) {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = getEl('form-submit-btn');
+                const status = getEl('form-status');
+                const accessKey = form.querySelector('[name="access_key"]').value;
+
+                if (!accessKey || accessKey === 'YOUR_WEB3FORMS_KEY_HERE') {
+                    status.innerText = "FORM NOT CONFIGURED YET. EMAIL royalsecurity.official@gmail.com DIRECTLY.";
+                    status.classList.remove('hidden', 'text-green-500');
+                    status.classList.add('text-red-500');
+                    setTimeout(() => { status.classList.add('hidden'); }, 6000);
+                    return;
+                }
+                
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> TRANSMITTING...';
+                
+                const formData = new FormData(form);
+                const object = Object.fromEntries(formData);
+                const json = JSON.stringify(object);
+
+                try {
+                    const response = await fetch('https://api.web3forms.com/submit', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                        body: json
+                    });
+                    const result = await response.json();
+                    if (response.status == 200) {
+                        status.innerText = "TRANSMISSION SUCCESSFUL. EXPECT COMMUNIQUE.";
+                        status.classList.remove('hidden', 'text-red-500');
+                        status.classList.add('text-green-500');
+                        form.reset();
+                    } else {
+                        throw new Error(result.message);
+                    }
+                } catch (error) {
+                    console.log(error);
+                    status.innerText = "TRANSMISSION FAILED. CHECK SECURE LINK.";
+                    status.classList.remove('hidden', 'text-green-500');
+                    status.classList.add('text-red-500');
+                } finally {
+                    btn.innerHTML = 'TRANSMIT';
+                    setTimeout(() => { status.classList.add('hidden'); }, 5000);
+                }
+            });
+        }
+
+        let matrixInterval;
+        function startMatrix() {
+            const canvas = getEl('matrix-canvas'); if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+
+            const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%';
+            const drops = Array(Math.floor(canvas.width/14)).fill(1);
+            if(matrixInterval) clearInterval(matrixInterval);
+            matrixInterval = setInterval(() => {
+                ctx.fillStyle = 'rgba(0,0,0,0.05)'; ctx.fillRect(0,0,canvas.width,canvas.height);
+                ctx.fillStyle = '#dc2626'; ctx.font = '14px monospace';
+                for(let i=0; i<drops.length; i++) {
+                    ctx.fillText(letters.charAt(Math.floor(Math.random()*letters.length)), i*14, drops[i]*14);
+                    if(drops[i]*14 > canvas.height && Math.random()>0.975) drops[i]=0; drops[i]++;
+                }
+            }, 33);
+        }
+
+        window.openLoginModal = () => {
+            loggedInUser = null; 
+            if(getEl('modal-overlay')) getEl('modal-overlay').classList.remove('hidden'); 
+            if(getEl('login-modal')) getEl('login-modal').classList.remove('hidden');
+            if(getEl('matrix-canvas')) getEl('matrix-canvas').classList.remove('hidden'); 
+            startMatrix(); playLowDrone();
+            const u=getEl('auth-user'); if(u){ u.value=''; u.focus(); } 
+            if(getEl('auth-pass')) getEl('auth-pass').value=''; 
+            if(getEl('auth-error')) getEl('auth-error').classList.add('hidden');
+        };
+        window.openModal = (id) => {
+            if(getEl('modal-overlay')) getEl('modal-overlay').classList.remove('hidden');
+            document.querySelectorAll('.dossier-modal, #login-modal').forEach(m => m.classList.add('hidden'));
+            if(getEl('matrix-canvas')) getEl('matrix-canvas').classList.add('hidden');
+            if(getEl(id)) getEl(id).classList.remove('hidden');
+        };
+
+        window.toggleMobileMenu = () => {
+            const menu = getEl('mobile-menu');
+            if(menu) menu.classList.toggle('hidden');
+        };
+
+        window.closeModals = () => {
+            if(getEl('modal-overlay')) getEl('modal-overlay').classList.add('hidden'); 
+            if(getEl('login-modal')) getEl('login-modal').classList.add('hidden');
+            if(getEl('admin-modal')) getEl('admin-modal').classList.add('hidden'); 
+            if(getEl('student-modal')) getEl('student-modal').classList.add('hidden');
+            document.querySelectorAll('.dossier-modal').forEach(m => m.classList.add('hidden'));
+            if(matrixInterval) clearInterval(matrixInterval);
+            if(getEl('auth-pass')) getEl('auth-pass').value=''; 
+        };
+
+        // Query fresh every call instead of once into a static list. The old version
+        // captured '.reveal' elements a single time at load, so anything injected
+        // later - the Command Hierarchy and Threat Intel cards, added once Firestore
+        // data or mock data arrives - was never in that list and never received the
+        // 'active' class, leaving those cards permanently at opacity:0.
+        function checkReveal() {
+            const wh = window.innerHeight;
+            document.querySelectorAll('.reveal:not(.active)').forEach(r => { if(r.getBoundingClientRect().top < wh-50) r.classList.add('active'); });
+        }
+        window.addEventListener('scroll', checkReveal);
+        checkReveal(); // reveal anything already in view on first paint, without waiting for a scroll event
+        
+        // Anti-Gravity Background
+        const netCanvas = getEl('network-canvas');
+        if(netCanvas) {
+            const ctx = netCanvas.getContext('2d');
+            let particles = [];
+            function resizeNet() { netCanvas.width = window.innerWidth; netCanvas.height = window.innerHeight; }
+            window.addEventListener('resize', resizeNet); resizeNet();
+            for(let i=0; i<50; i++) particles.push({ x: Math.random()*netCanvas.width, y: Math.random()*netCanvas.height, vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5 });
+            function animateNet() {
+                ctx.clearRect(0,0,netCanvas.width,netCanvas.height);
+                ctx.fillStyle = 'rgba(220, 38, 38, 0.5)';
+                particles.forEach(p => {
+                    p.x += p.vx; p.y += p.vy;
+                    if(p.x < 0 || p.x > netCanvas.width) p.vx *= -1;
+                    if(p.y < 0 || p.y > netCanvas.height) p.vy *= -1;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.fill();
+                });
+                requestAnimationFrame(animateNet);
+            }
+            animateNet();
+        }
+
+        window.injectMockTeam = () => { 
+            allTeam = [ { id:'1', name: "Raja Zulqarnain", role: "CEO / Lead Architect", initials: "RZ", desc: "Oversees all Red Team engagements." }, { id:'2', name: "\"Specter\"", role: "C2 & OPSEC Specialist", initials: "SP", desc: "Masters stealth operations." } ]; renderTeamToUI(); 
+        };
+
+        window.injectMockIntel = () => { 
+            allIntel = [ { id:'1', type: "OP: SHADOWFALL", title: "Bypassing Modern EDR", short: "Unhooking user-land APIs.", full: "Detailed breakdown of API unhooking...\n\n// FLAG FRAGMENT: c0d3_n1nj4}" } ]; renderIntelToUI(); 
+        };
+
+        window.injectMockData = () => { 
+            window.injectMockTeam();
+            window.injectMockIntel();
+        };
+
+        // ================== SYSTEM BOOT ==================
+        // Previously this fired fetchAllCMSData() immediately, before anonymous
+        // sign-in had a chance to resolve. If Firestore Rules require an
+        // authenticated request (request.auth != null), those reads went out
+        // unauthenticated, were denied, and fell straight through to mock data -
+        // regardless of what was actually saved in the CMS. Now we wait for the
+        // auth state to actually settle (signed in, or anonymous sign-in explicitly
+        // failed) before fetching, and guard against fetching more than once.
+        let hasLoadedCMSData = false;
+        function loadCMSDataOnce() {
+            if(hasLoadedCMSData) return;
+            hasLoadedCMSData = true;
+            fetchAllCMSData();
+        }
+
+        if(isDatabaseLive) {
+            onAuthStateChanged(auth, user => { if(user) loadCMSDataOnce(); });
+            signInAnonymously(auth).catch(e => {
+                console.warn("Anonymous auth failed - loading CMS data without an auth context.", e);
+                loadCMSDataOnce();
+            });
+        } else {
+            window.injectMockData(); // Mock fallbacks
+        }
+    </script>
+</body>
+</html>
